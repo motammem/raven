@@ -1,0 +1,22 @@
+{
+  "autoload": {
+    "psr-4": {
+      "Raven\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\Raven\\": "tests"
+    }
+  },
+  "require": {
+    "symfony/console": "^3.2",
+    "fabpot/goutte": "^3.2",
+    "league/pipeline": "^0.3.0",
+    "php-di/php-di": "^5.4",
+    "monolog/monolog": "^1.22",
+    "longman/telegram-bot": "^0.43.0",
+    "doctrine/common": "^2.7"
+  },
+  "bin": ["raven"]
+}
