@@ -1,20 +1,21 @@
 <?php
 
 /*
-* This file is part of the raven package.
-*
-* (c) Amin Alizade <motammem@gmail.com>
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*/
+ *
+ * This file is part of the Raven project.
+ *
+ * (c) Amin Alizade <motammem@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ */
 
 namespace Raven\Pipeline;
 
-use League\Pipeline\StageInterface;
 use Longman\TelegramBot\Request;
 use Longman\TelegramBot\Telegram;
-use Raven\Content\Article\Article;
+use League\Pipeline\StageInterface;
 
 class TelegramPublisherPipeline implements StageInterface
 {
@@ -25,17 +26,18 @@ class TelegramPublisherPipeline implements StageInterface
 
     /**
      * @param \Raven\Content\Article\Article $payload
+     *
      * @return mixed|void
      */
     public function __invoke($payload)
     {
         if ($payload->getImage()) {
             $content = file_get_contents($payload->getImage()->getOriginalUrl());
-            touch(__DIR__ . '/image.jpg');
-            file_put_contents(__DIR__ . '/image.jpg', $content);
+            touch(__DIR__.'/image.jpg');
+            file_put_contents(__DIR__.'/image.jpg', $content);
             $id = Request::sendPhoto([
                 'chat_id' => '@khabar_3anieh',
-            ], __DIR__ . '/image.jpg');
+            ], __DIR__.'/image.jpg');
         }
         $data = [
             'chat_id' => '@khabar_3anieh',

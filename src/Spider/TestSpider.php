@@ -1,24 +1,26 @@
 <?php
 
 /*
-* This file is part of the raven package.
-*
-* (c) Amin Alizade <motammem@gmail.com>
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*/
+ *
+ * This file is part of the Raven project.
+ *
+ * (c) Amin Alizade <motammem@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ */
 
 namespace Raven\Spider;
 
-use GuzzleHttp\Psr7\Response;
-use League\Pipeline\PipelineBuilderInterface;
-use Raven\Content\Article\Article;
+use Raven\Core\Util;
+use Raven\Core\Spider;
 use Raven\Content\Image;
 use Raven\Core\DomCrawler;
 use Raven\Core\Http\Request;
-use Raven\Core\Spider;
-use Raven\Core\Util;
+use GuzzleHttp\Psr7\Response;
+use Raven\Content\Article\Article;
+use League\Pipeline\PipelineBuilderInterface;
 use Raven\Pipeline\TelegramPublisherPipeline;
 
 class TestSpider extends Spider
@@ -27,14 +29,14 @@ class TestSpider extends Spider
 
     public function getStartUrls()
     {
-        return [$this->baseUrl . '/list/Economy/political-economy'];
+        return [$this->baseUrl.'/list/Economy/political-economy'];
     }
 
     public function parse(DomCrawler $crawler, Response $response, Request $request)
     {
         //        throw new SpiderCloseException('reached duplicated content');
         $links = [];
-        $crawler->filter(".row.media h4 a")->each(function (DomCrawler $crawler) use (&$links) {
+        $crawler->filter('.row.media h4 a')->each(function (DomCrawler $crawler) use (&$links) {
             $rel = $crawler->attr('href');
             if ($rel) {
                 $links[] = $rel;
@@ -45,11 +47,10 @@ class TestSpider extends Spider
         }
     }
 
-
     public function parseSingle(DomCrawler $crawler, Response $response, Request $request)
     {
         yield new Article(
-            $crawler->filter(".newsTitle h2")->text(),
+            $crawler->filter('.newsTitle h2')->text(),
             $crawler->filter('.leadCont')->count() ? $crawler->filter('.leadCont')->text() : null,
             $crawler->filter('.newsPhoto')->count() ? new Image($crawler->filter('.newsPhoto img')->attr('src')) : null
         );

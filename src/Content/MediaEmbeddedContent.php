@@ -1,18 +1,20 @@
 <?php
 
 /*
-* This file is part of the raven package.
-*
-* (c) Amin Alizade <motammem@gmail.com>
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*/
+ *
+ * This file is part of the Raven project.
+ *
+ * (c) Amin Alizade <motammem@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ */
 
 namespace Raven\Content;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Raven\Content\Media\Media;
+use Doctrine\Common\Collections\ArrayCollection;
 
 class MediaEmbeddedContent
 {
@@ -23,6 +25,7 @@ class MediaEmbeddedContent
 
     /**
      * MediaEmbeddedContent constructor.
+     *
      * @param Media[] $medias
      */
     public function __construct(array $medias = [])
@@ -32,21 +35,25 @@ class MediaEmbeddedContent
 
     /**
      * @param Media $media
+     *
      * @return $this
      */
     public function addMedia(Media $media)
     {
         $this->medias->add($media);
+
         return $this;
     }
 
     /**
      * @param Media $media
+     *
      * @return $this
      */
     public function removeMedia(Media $media)
     {
         $this->medias->removeElement($media);
+
         return $this;
     }
 

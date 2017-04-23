@@ -1,20 +1,22 @@
 <?php
 
 /*
-* This file is part of the raven package.
-*
-* (c) Amin Alizade <motammem@gmail.com>
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*/
+ *
+ * This file is part of the Raven project.
+ *
+ * (c) Amin Alizade <motammem@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ */
 
 namespace Raven\Core;
 
-use GuzzleHttp\Psr7\Response;
-use League\Pipeline\PipelineBuilderInterface;
 use Psr\Log\LoggerInterface;
 use Raven\Core\Http\Request;
+use GuzzleHttp\Psr7\Response;
+use League\Pipeline\PipelineBuilderInterface;
 
 abstract class Spider
 {
@@ -40,15 +42,15 @@ abstract class Spider
 
     /**
      * @param DomCrawler $crawler
-     * @param Response $response
-     * @param Request $request
+     * @param Response   $response
+     * @param Request    $request
+     *
      * @return mixed|Request[]
      */
     abstract public function parse(DomCrawler $crawler, Response $response, Request $request);
 
     /**
      * @param PipelineBuilderInterface $builder
-     * @return void
      */
     abstract public function buildPipeline(PipelineBuilderInterface $builder);
 

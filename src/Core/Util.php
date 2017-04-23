@@ -1,13 +1,15 @@
 <?php
 
 /*
-* This file is part of the raven package.
-*
-* (c) Amin Alizade <motammem@gmail.com>
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*/
+ *
+ * This file is part of the Raven project.
+ *
+ * (c) Amin Alizade <motammem@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ *
+ */
 
 namespace Raven\Core;
 
@@ -21,7 +23,7 @@ class Util
         if ($prel['path'][0] != '/') {
             // Relative path
             $dir = preg_replace('@/[^/]*$@', '', $pbase['path']);
-            $merged['path'] = $dir . '/' . $prel['path'];
+            $merged['path'] = $dir.'/'.$prel['path'];
         }
         // Get the path components, and remove the initial empty one
         $pathParts = explode('/', $merged['path']);
@@ -46,10 +48,10 @@ class Util
             }
             $prevPart = $part;
         }
-        $merged['path'] = '/' . implode('/', $path);
+        $merged['path'] = '/'.implode('/', $path);
         $ret = '';
         if (isset($merged['scheme'])) {
-            $ret .= $merged['scheme'] . ':';
+            $ret .= $merged['scheme'].':';
         }
         if (isset($merged['scheme']) || isset($merged['host'])) {
             $ret .= '//';
@@ -64,24 +66,25 @@ class Util
             if (isset($hostSource['user'])) {
                 $ret .= $hostSource['user'];
                 if (isset($hostSource['pass'])) {
-                    $ret .= ':' . $hostSource['pass'];
+                    $ret .= ':'.$hostSource['pass'];
                 }
                 $ret .= '@';
             }
             $ret .= $hostSource['host'];
             if (isset($hostSource['port'])) {
-                $ret .= ':' . $hostSource['port'];
+                $ret .= ':'.$hostSource['port'];
             }
         }
         if (isset($merged['path'])) {
             $ret .= $merged['path'];
         }
         if (isset($prel['query'])) {
-            $ret .= '?' . $prel['query'];
+            $ret .= '?'.$prel['query'];
         }
         if (isset($prel['fragment'])) {
-            $ret .= '#' . $prel['fragment'];
+            $ret .= '#'.$prel['fragment'];
         }
+
         return $ret;
     }
 }
