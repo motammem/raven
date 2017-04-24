@@ -11,13 +11,15 @@ return PhpCsFixer\Config::create()
         'ordered_imports' => array('sortAlgorithm' => 'length'),
         'not_operator_with_space' => true,
         'no_useless_return' => true,
-        'header_comment' => array('header' => '
+        'header_comment' => array('header' => <<<'TAG'
 This file is part of the Raven project.
 
 (c) Amin Alizade <motammem@gmail.com>
 
-For the full copyright and license information, please view the LICENSE 
-file that was distributed with this source code.'),
+For the full copyright and license information, please view the LICENSE
+file that was distributed with this source code.
+TAG
+),
         'phpdoc_order' => true,
     ))
     ->setFinder($finder);
