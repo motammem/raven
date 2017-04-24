@@ -11,84 +11,36 @@
 
 namespace Raven\Content\Article;
 
-use Raven\Content\Image;
+use Raven\Content\Media\Media;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class Article
+/**
+ * Class Article.
+ *
+ * @property MorphMany $medias
+ */
+class Article extends Model
 {
-    /**
-     * @var string
-     */
-    private $title;
+    protected $table = 'article';
+    protected $fillable = [
+        'title',
+        'lead',
+        'pre_title',
+        'post_title',
+        'body',
+    ];
 
     /**
-     * @var string
+     * @return MorphMany
      */
-    private $body;
-
-    /**
-     * @var Image
-     */
-    private $image;
-
-    /**
-     * Article constructor.
-     *
-     * @param string $title
-     * @param string $body
-     * @param Image  $image
-     */
-    public function __construct($title = null, $body = null, Image $image = null)
+    public function medias()
     {
-        $this->title = $title;
-        $this->body = $body;
-        $this->image = $image;
+        return $this->morphMany(Media::class, 'content');
     }
 
-    /**
-     * @return string
-     */
-    public function getTitle()
+    public function mainMedia()
     {
-        return $this->title;
-    }
-
-    /**
-     * @param string $title
-     */
-    public function setTitle($title)
-    {
-        $this->title = $title;
-    }
-
-    /**
-     * @return string
-     */
-    public function getBody()
-    {
-        return $this->body;
-    }
-
-    /**
-     * @param string $body
-     */
-    public function setBody($body)
-    {
-        $this->body = $body;
-    }
-
-    /**
-     * @return Image
-     */
-    public function getImage()
-    {
-        return $this->image;
-    }
-
-    /**
-     * @param Image $image
-     */
-    public function setImage($image)
-    {
-        $this->image = $image;
+        return $this->medias()->where('is_main', '=', '1');
     }
 }

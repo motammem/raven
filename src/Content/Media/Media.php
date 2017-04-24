@@ -11,97 +11,26 @@
 
 namespace Raven\Content\Media;
 
-class Media
+use Illuminate\Database\Eloquent\Model;
+
+class Media extends Model
 {
-    /**
-     * @var string
-     */
-    private $title;
+    protected $table = 'media';
+    protected $attributes = [
+        'is_main' => 0,
+    ];
+    protected $fillable = [
+        'id',
+        'title',
+        'filename',
+        'path',
+        'original_url',
+        'content_id',
+        'is_main',
+    ];
 
-    /**
-     * @var string
-     */
-    private $filename;
-
-    /**
-     * @var string
-     */
-    private $path;
-
-    /**
-     * @var string
-     */
-    private $originalUrl;
-
-    /**
-     * Image constructor.
-     *
-     * @param $originalUrl
-     * @param null $title
-     * @param $filename
-     * @param $path
-     */
-    public function __construct($originalUrl, $title = null, $filename = null, $path = null)
+    public function content()
     {
-        $this->filename = $filename;
-        $this->path = $path;
-        $this->originalUrl = $originalUrl;
-        $this->title = $title;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getFilename()
-    {
-        return $this->filename;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getPath()
-    {
-        return $this->path;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getOriginalUrl()
-    {
-        return $this->originalUrl;
-    }
-
-    /**
-     * @return string
-     */
-    public function getTitle()
-    {
-        return $this->title;
-    }
-
-    /**
-     * @param string $title
-     */
-    public function setTitle($title)
-    {
-        $this->title = $title;
-    }
-
-    /**
-     * @param string $filename
-     */
-    public function setFilename($filename)
-    {
-        $this->filename = $filename;
-    }
-
-    /**
-     * @param string $path
-     */
-    public function setPath($path)
-    {
-        $this->path = $path;
+        return $this->morphTo(null, null, 'id');
     }
 }

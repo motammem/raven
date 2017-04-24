@@ -18,12 +18,13 @@ use Raven\Spider\TestSpider;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class RavenCommand extends Command
 {
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $crawler = new Crawler(new Client());
+        $crawler = new Crawler(new Client(), new EventDispatcher());
         $testSpider = new TestSpider();
         $testSpider->setLogger(new Logger('test-spider'));
         $crawler->setSpiders([

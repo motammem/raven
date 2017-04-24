@@ -10,8 +10,7 @@
 * file that was distributed with this source code.
 */
 
-require_once __DIR__ . '/vendor/autoload.php';
-
+require_once __DIR__ . '/bootstrap.php';
 $application = new \Symfony\Component\Console\Application();
 $application->add(new \Raven\Core\Command\RavenCommand());
 $application->run();

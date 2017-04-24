@@ -12,10 +12,15 @@
 namespace Raven\Content\Media\Pipeline;
 
 use League\Pipeline\StageInterface;
+use Raven\Content\Article\Article;
 
 class MediaDownloaderPipeline implements StageInterface
 {
-    public function __invoke($payload)
+    /**
+     * @param Article $article
+     * @return Article
+     */
+    public function __invoke($article)
     {
     }
 }

@@ -14,36 +14,54 @@ namespace Raven\Core;
 use Monolog\Logger;
 use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
+use Raven\Core\Event\Events;
 use Raven\Core\Http\Request;
 use League\Pipeline\Pipeline;
+use Raven\Core\Event\SpiderEvent;
+use Raven\Core\Event\RequestEvent;
+use Raven\Core\Event\ResponseEvent;
 use League\Pipeline\PipelineBuilder;
+use Raven\Core\Exception\HttpException;
 use Raven\Core\Exception\SpiderCloseException;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class Crawler
 {
     /**
-     * @var Spider[]
+     * @var ArrayCollection|Spider[]
      */
-    private $spiders = [];
+    private $spiders;
 
     /**
      * @var Client
      */
     private $client;
+
     /**
      * @var LoggerInterface
      */
     private $logger;
 
-    public function __construct(Client $client, LoggerInterface $logger = null)
+    /**
+     * @var EventDispatcher
+     */
+    private $dispatcher;
+
+    public function __construct(Client $client, EventDispatcher $dispatcher, LoggerInterface $logger = null)
     {
+        $this->spiders = new ArrayCollection();
         $this->client = $client;
         if ( ! $logger) {
             $logger = new Logger('crawler');
         }
         $this->logger = $logger;
+        $this->dispatcher = $dispatcher;
     }
 
+    /**
+     * Start crawling spiders.
+     */
     public function start()
     {
         foreach ($this->spiders as $spider) {
@@ -54,16 +72,20 @@ class Crawler
                 /** @var Pipeline $pipeline */
                 $pipeline = $builder->build();
 
+                $this->dispatcher->dispatch(Events::SPIDER_OPENED, new SpiderEvent($spider));
+
                 foreach ($spider->startRequests() as $request) {
                     foreach ($this->handleRequest($request) as $items) {
-                        foreach ($items as $bang) {
-                            $pipeline->process($bang);
+                        foreach ($items as $item) {
+                            $this->dispatcher->dispatch(Events::ITEM_SCRAPED, $item);
+                            $pipeline->process($item);
                         }
                     }
                 }
             } catch (SpiderCloseException $e) {
                 $this->logger->info('Spider closed cause '.strtolower($e->getCause()), $e->getContext());
             }
+            $this->dispatcher->dispatch(Events::SPIDER_CLOSED, new SpiderEvent($spider));
         }
     }
 
@@ -76,18 +98,21 @@ class Crawler
      */
     public function handleRequest(Request $request)
     {
-        $this->logger->info(sprintf('Requesting'), [
+        $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
+
+        $this->logger->info('Requesting', [
             'url' => (string) $request->getUri(),
         ]);
 
         try {
             // perform request
             $response = $this->client->request($request->getMethod(), $request->getUri());
+            $this->dispatcher->dispatch(Events::ON_RESPONSE, new ResponseEvent($response));
         } catch (\Exception $e) {
             $this->logger->crit('Request error', [
                 'url' => $request->getUri(),
             ]);
-            throw $e;
+            throw new HttpException($e->getMessage(), $e->getCode(), $e->getPrevious());
         }
 
         // process callback results
@@ -103,7 +128,7 @@ class Crawler
     }
 
     /**
-     * @return Spider[]
+     * @return Spider[]|ArrayCollection
      */
     public function getSpiders()
     {
@@ -116,5 +141,13 @@ class Crawler
     public function setSpiders($spiders)
     {
         $this->spiders = $spiders;
+    }
+
+    /**
+     * @param Spider $spider
+     */
+    public function addSpider(Spider $spider)
+    {
+        $this->spiders->add($spider);
     }
 }

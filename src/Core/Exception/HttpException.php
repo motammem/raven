@@ -9,8 +9,8 @@
  * file that was distributed with this source code.
  */
 
-namespace Raven\Content;
+namespace Raven\Core\Exception;
 
-class Image
+class HttpException extends \Exception
 {
 }
