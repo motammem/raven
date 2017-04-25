@@ -12,7 +12,7 @@
 namespace Raven\Pipeline;
 
 use League\Pipeline\StageInterface;
-use Illuminate\Database\Eloquent\Model;
+use Raven\Infrastructure\Model;
 
 class EloquentPersistencePipeline implements StageInterface
 {
