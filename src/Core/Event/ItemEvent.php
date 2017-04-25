@@ -20,10 +20,15 @@ class ItemEvent extends Event
      * @var Request|mixed
      */
     private $item;
+    /**
+     * @var Request
+     */
+    private $request;
 
-    public function __construct($item)
+    public function __construct($item, Request $request)
     {
         $this->item = $item;
+        $this->request = $request;
     }
 
     /**
@@ -32,5 +37,13 @@ class ItemEvent extends Event
     public function getItem()
     {
         return $this->item;
+    }
+
+    /**
+     * @return Request
+     */
+    public function getRequest()
+    {
+        return $this->request;
     }
 }

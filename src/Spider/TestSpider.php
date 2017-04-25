@@ -31,7 +31,7 @@ class TestSpider extends Spider
 
     public function getStartUrls()
     {
-        return [$this->baseUrl.'/list/Economy/political-economy'];
+        return [$this->baseUrl.'/list/culture/music'];
     }
 
     public function parse(DomCrawler $crawler, Response $response, Request $request)
@@ -44,15 +44,27 @@ class TestSpider extends Spider
                 $links[] = $rel;
             }
         });
+
+        // return single requests
         foreach ($links as $link) {
             yield new Request(Util::urljoin($this->baseUrl, $link), [$this, 'parseSingle']);
+        }
+
+        // when done return next page
+        $nextPageAnchor = $crawler->filter('ul.pagination li.active + li')->filter('a');
+        if ($nextPageAnchor->count()) {
+            $url = $nextPageAnchor->attr('href');
+            yield new Request(Util::urljoin($this->baseUrl, $url), [$this, 'parse']);
         }
     }
 
     public function parseSingle(DomCrawler $crawler, Response $response, Request $request)
     {
-        $article = new Article([
+        $matches = [];
+        $identity = preg_match('/(?<=\/)\d{5,7}(?=\/)/', $request->getUri(), $matches) ? $matches[0] : null;
+        $article = new Article($identity, [
             'title' => trim($crawler->filter('.newsTitle h2')->text()),
+            'url' => $request->getUri(),
             'lead' => $crawler->filter('.leadCont')->count() ? $crawler->filter('.leadCont')->text() : null,
         ]);
         // main image
@@ -70,9 +82,9 @@ class TestSpider extends Spider
     {
         $builder
             ->add(new ArticlePipeline())
-            ->add(new MediaDownloaderPipeline())
+//            ->add(new MediaDownloaderPipeline())
             ->add(new EloquentPersistencePipeline())
 //            ->add(new TelegramPublisherPipeline())
-        ;
+;
     }
 }

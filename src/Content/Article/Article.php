@@ -11,6 +11,7 @@
 
 namespace Raven\Content\Article;
 
+use Raven\Core\Identity;
 use Raven\Content\Media\Media;
 use Raven\Infrastructure\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -22,12 +23,16 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  */
 class Article extends Model
 {
+    use Identity;
+
     protected $table = 'article';
     protected $fillable = [
         'title',
         'lead',
         'pre_title',
         'post_title',
+        'target_site_id',
+        'url',
         'body',
     ];
 

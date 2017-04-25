@@ -19,7 +19,7 @@ class TelegramPublisherPipeline implements StageInterface
 {
     public function __construct()
     {
-        $telegram = new Telegram('360054263:AAGnDHlLehdNk7_ooqaA7mQsbztXVKGFm1c', 'SaniehBot');
+        new Telegram(getenv('TELEGRAM_API_KEY'), getenv('TELEGRAM_BOT_USERNAME'));
     }
 
     /**
@@ -30,12 +30,10 @@ class TelegramPublisherPipeline implements StageInterface
     public function __invoke($payload)
     {
         if ($payload->mainMedia()) {
-            $content = file_get_contents($payload->mainMedia()->original_url);
-            touch(__DIR__.'/image.jpg');
-            file_put_contents(__DIR__.'/image.jpg', $content);
             $id = Request::sendPhoto([
                 'chat_id' => '@khabar_3anieh',
-            ], __DIR__.'/image.jpg');
+                'caption' => $payload->title,
+            ], $payload->mainMedia()->path)->getResult()->message_id;
         }
         $data = [
             'chat_id' => '@khabar_3anieh',

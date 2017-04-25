@@ -18,23 +18,18 @@ $dotenv->load();
 
 // setup logger
 $streamHandler = new \Monolog\Handler\StreamHandler(__DIR__ . '/' . getenv('LOG_FILE'));
-//$formatter = new \Monolog\Formatter\LineFormatter();
-//$formatter->includeStacktraces();
-//$streamHandler->setFormatter($formatter);
+$formatter = new \Monolog\Formatter\LineFormatter();
+$formatter->includeStacktraces();
+$streamHandler->setFormatter($formatter);
+$telegramHandler = new \TelegramHandler\TelegramHandler(getenv("TELEGRAM_API_KEY"), '@khabar_3anieh_dev',
+    \Monolog\Logger::ALERT);
 $logger = new \Monolog\Logger('global', [
     $streamHandler,
+    $telegramHandler,
 ]);
 
-function exception_handler(\Exception $exception)
-{
-    global $logger;
-    $logger->addAlert($exception->getMessage(), [
-        'exception' => $exception
-    ]);
-    throw $exception;
-}
-
-//set_exception_handler('exception_handler');
+\Monolog\ErrorHandler::register($logger, [], \Psr\Log\LogLevel::ALERT);
+\Symfony\Component\Debug\ExceptionHandler::register();
 
 // setup database
 $capsule = new Capsule();
@@ -53,6 +48,7 @@ $capsule->setAsGlobal();
 // Setup the Eloquent ORM... (optional; unless you've used setEventDispatcher())
 $capsule->bootEloquent();
 
-function root_path($dir = null){
+function root_path($dir = null)
+{
     return __DIR__ . '/' . ltrim($dir, '/');
 }

@@ -19,7 +19,9 @@
     "doctrine/common": "^2.7",
     "symfony/event-dispatcher": "^3.2",
     "illuminate/database": "^5.4",
-    "vlucas/phpdotenv": "^2.4"
+    "vlucas/phpdotenv": "^2.4",
+    "ide2/telegram-handler": "^2.0",
+    "symfony/debug": "^3.2"
   },
   "bin": ["raven"],
   "require-dev": {

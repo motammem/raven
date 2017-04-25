@@ -24,6 +24,7 @@ use Raven\Core\Event\ResponseEvent;
 use League\Pipeline\PipelineBuilder;
 use Raven\Core\Exception\SpiderCloseException;
 use Doctrine\Common\Collections\ArrayCollection;
+use Raven\Core\Exception\IgnoreRequestException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class Crawler
@@ -71,15 +72,12 @@ class Crawler
                 $spider->buildPipeline($builder);
                 /** @var Pipeline $pipeline */
                 $pipeline = $builder->build();
-
                 $this->dispatcher->dispatch(Events::SPIDER_OPENED, new SpiderEvent($spider));
 
                 foreach ($spider->startRequests() as $request) {
-                    foreach ($this->handleRequest($request) as $items) {
-                        foreach ($items as $item) {
-                            $this->dispatcher->dispatch(Events::ITEM_SCRAPED, new ItemEvent($item));
-                            $pipeline->process($item);
-                        }
+                    foreach ($this->handleRequest($request) as $item) {
+                        $this->logger->info('Piping item', ['item' => $item]);
+                        $pipeline->process($item);
                     }
                 }
             } catch (SpiderCloseException $e) {
@@ -98,25 +96,32 @@ class Crawler
      */
     public function handleRequest(Request $request)
     {
-        $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
+        // check for IgnoreRequestException
+        try {
+            $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
+            $this->logger->info('Requesting', [
+                'url' => (string) $request->getUri(),
+            ]);
 
-        $this->logger->info('Requesting', [
-            'url' => (string) $request->getUri(),
-        ]);
+            // perform request
+            $response = $this->client->request($request->getMethod(), $request->getUri());
+            $this->dispatcher->dispatch(Events::ON_RESPONSE, new ResponseEvent($response));
 
-        // perform request
-        $response = $this->client->request($request->getMethod(), $request->getUri());
-        $this->dispatcher->dispatch(Events::ON_RESPONSE, new ResponseEvent($response));
-
-        // process callback results
-        $crawler = new DomCrawler($response->getBody()->getContents());
-        $results = call_user_func($request->getCallback(), $crawler, $response, $request);
-        foreach ($results as $result) {
-            if ($result instanceof Request) {
-                yield $this->handleRequest($result);
-            } else {
-                yield $result;
+            // process callback results
+            $crawler = new DomCrawler($response->getBody()->getContents());
+            $results = call_user_func($request->getCallback(), $crawler, $response, $request);
+            foreach ($results as $result) {
+                $this->dispatcher->dispatch(Events::ITEM_SCRAPED, new ItemEvent($result, $request));
+                if ($result instanceof Request) {
+                    foreach ($this->handleRequest($result) as $item) {
+                        yield $item;
+                    }
+                } else {
+                    yield $result;
+                }
             }
+        } catch (IgnoreRequestException $e) {
+            // just ignore request
         }
     }
 

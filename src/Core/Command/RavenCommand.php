@@ -19,12 +19,15 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Raven\Core\Component\History\EventListener\HistoryEventSubscriber;
 
 class RavenCommand extends Command
 {
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $crawler = new Crawler(new Client(), new EventDispatcher());
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addSubscriber(new HistoryEventSubscriber());
+        $crawler = new Crawler(new Client(), $eventDispatcher);
         $testSpider = new TestSpider();
         $testSpider->setLogger(new Logger('test-spider'));
         $crawler->setSpiders([
