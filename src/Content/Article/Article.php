@@ -12,7 +12,7 @@
 namespace Raven\Content\Article;
 
 use Raven\Content\Media\Media;
-use Illuminate\Database\Eloquent\Model;
+use Raven\Infrastructure\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
@@ -41,6 +41,6 @@ class Article extends Model
 
     public function mainMedia()
     {
-        return $this->medias()->where('is_main', '=', '1');
+        return $this->medias()->where('is_main', '=', '1')->first();
     }
 }

@@ -17,11 +17,11 @@ use Psr\Log\LoggerInterface;
 use Raven\Core\Event\Events;
 use Raven\Core\Http\Request;
 use League\Pipeline\Pipeline;
+use Raven\Core\Event\ItemEvent;
 use Raven\Core\Event\SpiderEvent;
 use Raven\Core\Event\RequestEvent;
 use Raven\Core\Event\ResponseEvent;
 use League\Pipeline\PipelineBuilder;
-use Raven\Core\Exception\HttpException;
 use Raven\Core\Exception\SpiderCloseException;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -77,7 +77,7 @@ class Crawler
                 foreach ($spider->startRequests() as $request) {
                     foreach ($this->handleRequest($request) as $items) {
                         foreach ($items as $item) {
-                            $this->dispatcher->dispatch(Events::ITEM_SCRAPED, $item);
+                            $this->dispatcher->dispatch(Events::ITEM_SCRAPED, new ItemEvent($item));
                             $pipeline->process($item);
                         }
                     }
@@ -104,16 +104,9 @@ class Crawler
             'url' => (string) $request->getUri(),
         ]);
 
-        try {
-            // perform request
-            $response = $this->client->request($request->getMethod(), $request->getUri());
-            $this->dispatcher->dispatch(Events::ON_RESPONSE, new ResponseEvent($response));
-        } catch (\Exception $e) {
-            $this->logger->crit('Request error', [
-                'url' => $request->getUri(),
-            ]);
-            throw new HttpException($e->getMessage(), $e->getCode(), $e->getPrevious());
-        }
+        // perform request
+        $response = $this->client->request($request->getMethod(), $request->getUri());
+        $this->dispatcher->dispatch(Events::ON_RESPONSE, new ResponseEvent($response));
 
         // process callback results
         $crawler = new DomCrawler($response->getBody()->getContents());

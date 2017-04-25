@@ -17,9 +17,13 @@ use Raven\Content\Image;
 use Raven\Core\DomCrawler;
 use Raven\Core\Http\Request;
 use GuzzleHttp\Psr7\Response;
+use Raven\Content\Media\Media;
 use Raven\Content\Article\Article;
+use Raven\Content\Article\ArticlePipeline;
 use League\Pipeline\PipelineBuilderInterface;
 use Raven\Pipeline\TelegramPublisherPipeline;
+use Raven\Pipeline\EloquentPersistencePipeline;
+use Raven\Content\Media\Pipeline\MediaDownloaderPipeline;
 
 class TestSpider extends Spider
 {
@@ -47,15 +51,28 @@ class TestSpider extends Spider
 
     public function parseSingle(DomCrawler $crawler, Response $response, Request $request)
     {
-        yield new Article(
-            $crawler->filter('.newsTitle h2')->text(),
-            $crawler->filter('.leadCont')->count() ? $crawler->filter('.leadCont')->text() : null,
-            $crawler->filter('.newsPhoto')->count() ? new Image($crawler->filter('.newsPhoto img')->attr('src')) : null
-        );
+        $article = new Article([
+            'title' => trim($crawler->filter('.newsTitle h2')->text()),
+            'lead' => $crawler->filter('.leadCont')->count() ? $crawler->filter('.leadCont')->text() : null,
+        ]);
+        // main image
+        if ($crawler->filter('.newsPhoto')->count()) {
+            $mainMedia = new Media([
+                'original_url' => $crawler->filter('.newsPhoto img')->attr('src'),
+                'is_main' => 1,
+            ]);
+            $article->medias->add($mainMedia);
+        }
+        yield $article;
     }
 
     public function buildPipeline(PipelineBuilderInterface $builder)
     {
-        $builder->add(new TelegramPublisherPipeline());
+        $builder
+            ->add(new ArticlePipeline())
+            ->add(new MediaDownloaderPipeline())
+            ->add(new EloquentPersistencePipeline())
+//            ->add(new TelegramPublisherPipeline())
+        ;
     }
 }

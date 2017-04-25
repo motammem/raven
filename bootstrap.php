@@ -11,23 +11,19 @@
 
 require_once __DIR__ . '/vendor/autoload.php';
 use Illuminate\Database\Capsule\Manager as Capsule;
+
 // setup environment variables
 $dotenv = new Dotenv\Dotenv(__DIR__);
 $dotenv->load();
 
 // setup logger
+$streamHandler = new \Monolog\Handler\StreamHandler(__DIR__ . '/' . getenv('LOG_FILE'));
+//$formatter = new \Monolog\Formatter\LineFormatter();
+//$formatter->includeStacktraces();
+//$streamHandler->setFormatter($formatter);
 $logger = new \Monolog\Logger('global', [
-    new \Monolog\Handler\StreamHandler(__DIR__ . '/' . getenv('LOG_FILE')),
+    $streamHandler,
 ]);
-
-// setup error and exception handlers
-set_error_handler(function ($errno, $errstr, $errfile, $errline, array $errcontext) {
-    if (0 === error_reporting()) {
-        return false;
-    }
-
-    throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
-});
 
 function exception_handler(\Exception $exception)
 {
@@ -35,23 +31,28 @@ function exception_handler(\Exception $exception)
     $logger->addAlert($exception->getMessage(), [
         'exception' => $exception
     ]);
+    throw $exception;
 }
 
-set_exception_handler('exception_handler');
+//set_exception_handler('exception_handler');
 
 // setup database
 $capsule = new Capsule();
 $capsule->addConnection([
-    'driver'    => 'mysql',
-    'host'      => getenv("DATABASE_HOST"),
-    'database'  => getenv("DATABASE_NAME"),
-    'username'  => getenv("DATABASE_USERNAME"),
-    'password'  => getenv("DATABASE_PASSWORD"),
-    'charset'   => 'utf8',
+    'driver' => 'mysql',
+    'host' => getenv("DATABASE_HOST"),
+    'database' => getenv("DATABASE_NAME"),
+    'username' => getenv("DATABASE_USERNAME"),
+    'password' => getenv("DATABASE_PASSWORD"),
+    'charset' => 'utf8',
     'collation' => 'utf8_unicode_ci',
-    'prefix'    => '',
+    'prefix' => '',
 ]);
 // Make this Capsule instance available globally via static methods... (optional)
 $capsule->setAsGlobal();
 // Setup the Eloquent ORM... (optional; unless you've used setEventDispatcher())
 $capsule->bootEloquent();
+
+function root_path($dir = null){
+    return __DIR__ . '/' . ltrim($dir, '/');
+}

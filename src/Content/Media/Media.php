@@ -11,7 +11,7 @@
 
 namespace Raven\Content\Media;
 
-use Illuminate\Database\Eloquent\Model;
+use Raven\Infrastructure\Model;
 
 class Media extends Model
 {

@@ -29,8 +29,8 @@ class TelegramPublisherPipeline implements StageInterface
      */
     public function __invoke($payload)
     {
-        if ($payload->getImage()) {
-            $content = file_get_contents($payload->getImage()->getOriginalUrl());
+        if ($payload->mainMedia()) {
+            $content = file_get_contents($payload->mainMedia()->original_url);
             touch(__DIR__.'/image.jpg');
             file_put_contents(__DIR__.'/image.jpg', $content);
             $id = Request::sendPhoto([
@@ -39,7 +39,7 @@ class TelegramPublisherPipeline implements StageInterface
         }
         $data = [
             'chat_id' => '@khabar_3anieh',
-            'text' => $payload->getBody(),
+            'text' => $payload->lead,
         ];
         if (isset($id)) {
             $data['reply_to_message_id'] = $id;
