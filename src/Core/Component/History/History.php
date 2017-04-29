@@ -11,7 +11,7 @@
 
 namespace Raven\Core\Component\History;
 
-use Raven\Infrastructure\Model;
+use Raven\Core\Infrastructure\Model;
 
 class History extends Model
 {

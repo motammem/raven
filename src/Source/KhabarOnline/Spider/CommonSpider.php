@@ -9,11 +9,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Raven\Spider;
+namespace Raven\Source\KhabarOnline\Spider;
 
 use Raven\Core\Util;
 use Raven\Core\Spider;
-use Raven\Content\Image;
 use Raven\Core\DomCrawler;
 use Raven\Core\Http\Request;
 use GuzzleHttp\Psr7\Response;
@@ -21,11 +20,9 @@ use Raven\Content\Media\Media;
 use Raven\Content\Article\Article;
 use Raven\Content\Article\ArticlePipeline;
 use League\Pipeline\PipelineBuilderInterface;
-use Raven\Pipeline\TelegramPublisherPipeline;
 use Raven\Pipeline\EloquentPersistencePipeline;
-use Raven\Content\Media\Pipeline\MediaDownloaderPipeline;
 
-class TestSpider extends Spider
+class CommonSpider extends Spider
 {
     private $baseUrl = 'http://www.khabaronline.ir';
 
@@ -36,7 +33,6 @@ class TestSpider extends Spider
 
     public function parse(DomCrawler $crawler, Response $response, Request $request)
     {
-        //        throw new SpiderCloseException('reached duplicated content');
         $links = [];
         $crawler->filter('.row.media h4 a')->each(function (DomCrawler $crawler) use (&$links) {
             $rel = $crawler->attr('href');
@@ -63,7 +59,7 @@ class TestSpider extends Spider
         $matches = [];
         $identity = preg_match('/(?<=\/)\d{5,7}(?=\/)/', $request->getUri(), $matches) ? $matches[0] : null;
         $article = new Article($identity, [
-            'title' => trim($crawler->filter('.newsTitle h2')->text()),
+            'title' => trim($crawler->filter('.newsTitle h5')->text()),
             'url' => $request->getUri(),
             'lead' => $crawler->filter('.leadCont')->count() ? $crawler->filter('.leadCont')->text() : null,
         ]);
@@ -83,8 +79,7 @@ class TestSpider extends Spider
         $builder
             ->add(new ArticlePipeline())
 //            ->add(new MediaDownloaderPipeline())
-            ->add(new EloquentPersistencePipeline())
-//            ->add(new TelegramPublisherPipeline())
-;
+            ->add(new EloquentPersistencePipeline())//            ->add(new TelegramPublisherPipeline())
+        ;
     }
 }

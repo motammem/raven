@@ -13,7 +13,7 @@ namespace Raven\Content\Article;
 
 use Raven\Core\Identity;
 use Raven\Content\Media\Media;
-use Raven\Infrastructure\Model;
+use Raven\Core\Infrastructure\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**

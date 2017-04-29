@@ -11,7 +11,7 @@
 
 namespace Raven\Content\Media;
 
-use Raven\Infrastructure\Model;
+use Raven\Core\Infrastructure\Model;
 
 class Media extends Model
 {

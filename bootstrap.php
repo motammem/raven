@@ -21,7 +21,7 @@ $streamHandler = new \Monolog\Handler\StreamHandler(__DIR__ . '/' . getenv('LOG_
 $formatter = new \Monolog\Formatter\LineFormatter();
 $formatter->includeStacktraces();
 $streamHandler->setFormatter($formatter);
-$telegramHandler = new \TelegramHandler\TelegramHandler(getenv("TELEGRAM_API_KEY"), '@khabar_3anieh_dev',
+$telegramHandler = new \TelegramHandler\TelegramHandler(getenv("TELEGRAM_API_KEY"), '@kahbar_3anieh_dev',
     \Monolog\Logger::ALERT);
 $logger = new \Monolog\Logger('global', [
     $streamHandler,

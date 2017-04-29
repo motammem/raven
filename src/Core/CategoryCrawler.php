@@ -11,7 +11,6 @@
 
 namespace Raven\Core;
 
-use Monolog\Logger;
 use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
 use Raven\Core\Event\Events;
@@ -22,42 +21,24 @@ use Raven\Core\Event\SpiderEvent;
 use Raven\Core\Event\RequestEvent;
 use Raven\Core\Event\ResponseEvent;
 use League\Pipeline\PipelineBuilder;
+use Raven\Category\CrawlableCategory;
+use GuzzleHttp\Exception\RequestException;
 use Raven\Core\Exception\SpiderCloseException;
 use Doctrine\Common\Collections\ArrayCollection;
 use Raven\Core\Exception\IgnoreRequestException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
-class Crawler
+class CategoryCrawler extends Crawler
 {
     /**
-     * @var ArrayCollection|Spider[]
+     * @var ArrayCollection|CrawlableCategory[]
      */
-    protected $spiders;
-
-    /**
-     * @var Client
-     */
-    protected $client;
-
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-    /**
-     * @var EventDispatcher
-     */
-    protected $dispatcher;
+    private $categories;
 
     public function __construct(Client $client, EventDispatcher $dispatcher, LoggerInterface $logger = null)
     {
-        $this->spiders = new ArrayCollection();
-        $this->client = $client;
-        if ( ! $logger) {
-            $logger = new Logger('crawler');
-        }
-        $this->logger = $logger;
-        $this->dispatcher = $dispatcher;
+        parent::__construct($client, $dispatcher, $logger);
+        $this->categories = new ArrayCollection();
     }
 
     /**
@@ -65,8 +46,13 @@ class Crawler
      */
     public function start()
     {
-        foreach ($this->spiders as $spider) {
+        foreach ($this->categories as $category) {
+            $logContext = $this->generateLogContext($category);
             try {
+                /** @var Spider $spider */
+                $spider = $category->spider();
+                $spider = new $spider();
+
                 // build spider pipeline
                 $builder = new PipelineBuilder();
                 $spider->buildPipeline($builder);
@@ -80,11 +66,49 @@ class Crawler
                         $pipeline->process($item);
                     }
                 }
+
+                $this->logger->info('Spider finished successfully', $logContext);
             } catch (SpiderCloseException $e) {
-                $this->logger->info('Spider closed cause '.strtolower($e->getCause()), $e->getContext());
+                // close spider and ignore it
+                $this->logger->info('Spider closed cause '.strtolower($e->getCause()), $logContext);
+            } catch (\InvalidArgumentException $e) {
+                // for parse errors
+                $trace = $e->getTrace();
+                $logContext['file'] = $trace[0]['file'];
+                $logContext['line'] = $trace[0]['line'];
+                $this->logger->alert('Parser not matched:'.$e->getMessage(), $logContext);
+                throw $e;
+            } catch (RequestException $e) {
+                $this->logger->alert('Connection timeout: '.$e->getMessage(), $logContext);
+                throw $e;
+            } catch (\Exception $e) {
+                $this->logger->alert('Spider crashed: '.$e->getMessage(), $logContext);
+                throw $e;
             }
+
             $this->dispatcher->dispatch(Events::SPIDER_CLOSED, new SpiderEvent($spider));
         }
+    }
+
+    /**
+     * @param $category CrawlableCategory
+     *
+     * @return array
+     */
+    public function generateLogContext($category)
+    {
+        $matches = [];
+        preg_match('/(?<=Source\\\\).*?(?=\\\\)/', get_class($category), $matches);
+        $source = strtolower($matches[0]);
+        preg_match('/(?<=\\\\)[^\\\\]+?(?=Spider$)/', $category->spider(), $matches);
+        $spider = strtolower($matches[0]);
+        $logContext = [
+            'source' => $source,
+            'category' => $category->getName(),
+            'spider' => $spider,
+        ];
+
+        return $logContext;
     }
 
     /**
@@ -126,26 +150,26 @@ class Crawler
     }
 
     /**
-     * @return Spider[]|ArrayCollection
+     * @return CrawlableCategory[]|ArrayCollection
      */
-    public function getSpiders()
+    public function getCategories()
     {
-        return $this->spiders;
+        return $this->categories;
     }
 
     /**
-     * @param Spider[] $spiders
+     * @param CrawlableCategory[] $categories
      */
-    public function setSpiders($spiders)
+    public function setCategories($categories)
     {
-        $this->spiders = $spiders;
+        $this->categories = $categories;
     }
 
     /**
-     * @param Spider $spider
+     * @param CrawlableCategory $category
      */
-    public function addSpider(Spider $spider)
+    public function addCategory(CrawlableCategory $category)
     {
-        $this->spiders->add($spider);
+        $this->categories->add($category);
     }
 }

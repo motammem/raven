@@ -11,8 +11,8 @@
 
 namespace Raven\Pipeline;
 
-use Raven\Infrastructure\Model;
 use League\Pipeline\StageInterface;
+use Raven\Core\Infrastructure\Model;
 use Illuminate\Database\QueryException;
 
 class EloquentPersistencePipeline implements StageInterface
