@@ -20,6 +20,7 @@ use Raven\Content\Media\Media;
 use Raven\Content\Article\Article;
 use Raven\Content\Article\ArticlePipeline;
 use League\Pipeline\PipelineBuilderInterface;
+use Raven\Pipeline\TelegramPublisherPipeline;
 use Raven\Pipeline\EloquentPersistencePipeline;
 
 class CommonSpider extends Spider
@@ -59,7 +60,7 @@ class CommonSpider extends Spider
         $matches = [];
         $identity = preg_match('/(?<=\/)\d{5,7}(?=\/)/', $request->getUri(), $matches) ? $matches[0] : null;
         $article = new Article($identity, [
-            'title' => trim($crawler->filter('.newsTitle h5')->text()),
+            'title' => trim($crawler->filter('.newsTitle h6')->text()),
             'url' => $request->getUri(),
             'lead' => $crawler->filter('.leadCont')->count() ? $crawler->filter('.leadCont')->text() : null,
         ]);
@@ -79,6 +80,7 @@ class CommonSpider extends Spider
         $builder
             ->add(new ArticlePipeline())
 //            ->add(new MediaDownloaderPipeline())
+            ->add(new TelegramPublisherPipeline())
             ->add(new EloquentPersistencePipeline())//            ->add(new TelegramPublisherPipeline())
         ;
     }

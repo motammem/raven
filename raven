@@ -12,5 +12,13 @@
 
 require_once __DIR__ . '/bootstrap.php';
 $application = new \Symfony\Component\Console\Application();
+$application->setCatchExceptions(false);
+
 $application->add(new \Raven\Core\Command\RavenCommand());
-$application->run();
+
+try {
+    $application->run();
+} catch (\Raven\Core\Exception\CrawlerException $e) {
+    global $logger;
+    $logger->alert($e->getMessage(), $e->getContext());
+}

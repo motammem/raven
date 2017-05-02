@@ -11,29 +11,21 @@
 
 namespace Raven\Core\Command;
 
-use Monolog\Logger;
 use GuzzleHttp\Client;
-use Raven\Core\Crawler;
-use Raven\Spider\TestSpider;
+use Raven\Core\CategoryCrawler;
 use Symfony\Component\Console\Command\Command;
+use Raven\Source\KhabarOnline\Category\Culture;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use Raven\Core\Component\History\EventListener\HistoryEventSubscriber;
 
 class RavenCommand extends Command
 {
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addSubscriber(new HistoryEventSubscriber());
-        $crawler = new Crawler(new Client(), $eventDispatcher);
-        $testSpider = new TestSpider();
-        $testSpider->setLogger(new Logger('test-spider'));
-        $crawler->setSpiders([
-            $testSpider,
-        ]);
-        $crawler->start();
+        $catCrawler = new CategoryCrawler(new Client(), new EventDispatcher());
+        $catCrawler->addCategory(new Culture());
+        $catCrawler->start();
     }
 
     protected function configure()

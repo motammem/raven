@@ -14,6 +14,7 @@ namespace Tests\Raven\Functional\Source\KhabarOnline\Category;
 use GuzzleHttp\Client;
 use PHPUnit\Framework\TestCase;
 use Raven\Core\CategoryCrawler;
+use Raven\Core\Component\History\EventListener\HistoryEventSubscriber;
 use Raven\Source\KhabarOnline\Category\Culture;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
@@ -22,7 +23,9 @@ class CultureTest extends TestCase
     public function testRun()
     {
         global $logger;
-        $catCrawler = new CategoryCrawler(new Client(), new EventDispatcher(), $logger);
+        $dispatcher = new EventDispatcher();
+        $dispatcher->addSubscriber(new HistoryEventSubscriber());
+        $catCrawler = new CategoryCrawler(new Client(), $dispatcher, $logger);
         $catCrawler->addCategory(new Culture());
         $catCrawler->start();
     }

@@ -12,26 +12,50 @@
 require_once __DIR__ . '/vendor/autoload.php';
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-// setup environment variables
+/*
+ * Helper functions
+ */
+function root_path($dir = null)
+{
+    return __DIR__ . '/' . ltrim($dir, '/');
+}
+
+
+/*
+ * Setup environment variables
+ */
 $dotenv = new Dotenv\Dotenv(__DIR__);
 $dotenv->load();
 
-// setup logger
-$streamHandler = new \Monolog\Handler\StreamHandler(__DIR__ . '/' . getenv('LOG_FILE'));
+/*
+ * Setup system wide logger
+ */
+// stream handler
+$streamHandler = new \Monolog\Handler\StreamHandler(root_path(getenv('LOG_FILE')), \Psr\Log\LogLevel::ERROR);
 $formatter = new \Monolog\Formatter\LineFormatter();
 $formatter->includeStacktraces();
 $streamHandler->setFormatter($formatter);
-$telegramHandler = new \TelegramHandler\TelegramHandler(getenv("TELEGRAM_API_KEY"), '@kahbar_3anieh_dev',
-    \Monolog\Logger::ALERT);
-$logger = new \Monolog\Logger('global', [
+
+// telegram handler
+$telegramHandler = new \TelegramHandler\TelegramHandler(
+    getenv("TELEGRAM_API_KEY"),
+    '@kahbar_3anieh_dev',
+    \Monolog\Logger::ALERT
+);
+$telegramHandler->setFormatter(new \TelegramHandler\TelegramFormatter());
+
+// creating logger
+$logger = new \Monolog\Logger('raven', [
     $streamHandler,
-    $telegramHandler,
+    //    $telegramHandler,
 ]);
 
-\Monolog\ErrorHandler::register($logger, [], \Psr\Log\LogLevel::ALERT);
-\Symfony\Component\Debug\ExceptionHandler::register();
+// register logger to listen errors
+\Monolog\ErrorHandler::register($logger);
 
-// setup database
+/*
+ * Setup database layer
+ */
 $capsule = new Capsule();
 $capsule->addConnection([
     'driver' => 'mysql',
@@ -43,12 +67,8 @@ $capsule->addConnection([
     'collation' => 'utf8_unicode_ci',
     'prefix' => '',
 ]);
-// Make this Capsule instance available globally via static methods... (optional)
-$capsule->setAsGlobal();
+
 // Setup the Eloquent ORM... (optional; unless you've used setEventDispatcher())
 $capsule->bootEloquent();
 
-function root_path($dir = null)
-{
-    return __DIR__ . '/' . ltrim($dir, '/');
-}
+

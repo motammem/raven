@@ -11,9 +11,9 @@
 
 namespace Raven\Core;
 
-use Monolog\Logger;
 use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Raven\Core\Event\Events;
 use Raven\Core\Http\Request;
 use League\Pipeline\Pipeline;
@@ -54,7 +54,7 @@ class Crawler
         $this->spiders = new ArrayCollection();
         $this->client = $client;
         if ( ! $logger) {
-            $logger = new Logger('crawler');
+            $logger = new NullLogger();
         }
         $this->logger = $logger;
         $this->dispatcher = $dispatcher;

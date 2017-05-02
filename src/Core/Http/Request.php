@@ -19,19 +19,26 @@ class Request extends \GuzzleHttp\Psr7\Request
     private $callback;
 
     /**
+     * @var string
+     */
+    private $identity;
+
+    /**
      * Request constructor.
      *
-     * @param string   $uri
+     * @param string $uri
      * @param callable $callback
-     * @param string   $method
-     * @param array    $headers
-     * @param null     $body
-     * @param string   $version
+     * @param string $identity
+     * @param string $method
+     * @param array $headers
+     * @param null $body
+     * @param string $version
      */
-    public function __construct($uri, $callback, $method = 'GET', array $headers = [], $body = null, $version = '1.1')
+    public function __construct($uri, $callback, $identity = null, $method = 'GET', array $headers = [], $body = null, $version = '1.1')
     {
         $this->callback = $callback;
         parent::__construct($method, $uri, $headers, $body, $version);
+        $this->identity = $identity;
     }
 
     /**
@@ -40,5 +47,13 @@ class Request extends \GuzzleHttp\Psr7\Request
     public function getCallback()
     {
         return $this->callback;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIdentity()
+    {
+        return $this->identity;
     }
 }
