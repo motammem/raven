@@ -11,22 +11,22 @@
 
 namespace Raven\Core;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
-use League\Pipeline\Pipeline;
-use League\Pipeline\PipelineBuilder;
 use Psr\Log\LoggerInterface;
-use Raven\Category\CrawlableCategory;
 use Raven\Core\Event\Events;
+use Raven\Core\Http\Request;
+use League\Pipeline\Pipeline;
 use Raven\Core\Event\ItemEvent;
+use Raven\Core\Event\SpiderEvent;
 use Raven\Core\Event\RequestEvent;
 use Raven\Core\Event\ResponseEvent;
-use Raven\Core\Event\SpiderEvent;
+use League\Pipeline\PipelineBuilder;
+use Raven\Category\CrawlableCategory;
+use GuzzleHttp\Exception\RequestException;
 use Raven\Core\Exception\CrawlerException;
-use Raven\Core\Exception\IgnoreRequestException;
 use Raven\Core\Exception\SpiderCloseException;
-use Raven\Core\Http\Request;
+use Doctrine\Common\Collections\ArrayCollection;
+use Raven\Core\Exception\IgnoreRequestException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class CategoryCrawler extends Crawler
@@ -79,17 +79,17 @@ class CategoryCrawler extends Crawler
                 $this->logger->info('Spider finished successfully', $logContext);
             } catch (SpiderCloseException $e) {
                 // close spider and ignore it
-                $this->logger->info('Spider closed cause ' . strtolower($e->getCause()), $logContext);
+                $this->logger->info('Spider closed cause '.strtolower($e->getCause()), $logContext);
             } catch (\InvalidArgumentException $e) {
                 // parse errors
                 $trace = $e->getTrace();
                 $logContext['file'] = $trace[0]['file'];
                 $logContext['line'] = $trace[0]['line'];
-                throw new CrawlerException($logContext, 'Parser not matched:' . $e->getMessage(), 0, $e);
+                throw new CrawlerException($logContext, 'Parser not matched:'.$e->getMessage(), 0, $e);
             } catch (RequestException $e) {
                 // connection errors
                 $logContext['url'] = $e->getRequest()->getUri();
-                throw new CrawlerException($logContext, 'Connection timeout: ' . $e->getMessage(), 0, $e);
+                throw new CrawlerException($logContext, 'Connection timeout: '.$e->getMessage(), 0, $e);
             }
 
             // dispatch spider.close event
@@ -131,7 +131,7 @@ class CategoryCrawler extends Crawler
         try {
             $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
             $this->logger->info('Requesting', [
-                'url' => (string)$request->getUri(),
+                'url' => (string) $request->getUri(),
             ]);
             // perform request
             $response = $this->client->request($request->getMethod(), $request->getUri());

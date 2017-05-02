@@ -12,8 +12,8 @@
 namespace Raven\Core;
 
 use GuzzleHttp\Client;
-use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Psr\Log\LoggerInterface;
 use Raven\Core\Event\Events;
 use Raven\Core\Http\Request;
 use League\Pipeline\Pipeline;

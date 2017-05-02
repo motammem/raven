@@ -14,9 +14,9 @@ namespace Tests\Raven\Functional\Source\KhabarOnline\Category;
 use GuzzleHttp\Client;
 use PHPUnit\Framework\TestCase;
 use Raven\Core\CategoryCrawler;
-use Raven\Core\Component\History\EventListener\HistoryEventSubscriber;
 use Raven\Source\KhabarOnline\Category\Culture;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Raven\Core\Component\History\EventListener\HistoryEventSubscriber;
 
 class CultureTest extends TestCase
 {

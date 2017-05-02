@@ -26,13 +26,13 @@ class Request extends \GuzzleHttp\Psr7\Request
     /**
      * Request constructor.
      *
-     * @param string $uri
+     * @param string   $uri
      * @param callable $callback
-     * @param string $identity
-     * @param string $method
-     * @param array $headers
-     * @param null $body
-     * @param string $version
+     * @param string   $identity
+     * @param string   $method
+     * @param array    $headers
+     * @param null     $body
+     * @param string   $version
      */
     public function __construct($uri, $callback, $identity = null, $method = 'GET', array $headers = [], $body = null, $version = '1.1')
     {
