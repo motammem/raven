@@ -36,10 +36,20 @@ class CategoryCrawler extends Crawler
      */
     private $categories;
 
-    public function __construct(Client $client, EventDispatcher $dispatcher, LoggerInterface $logger = null)
-    {
+    /**
+     * @var CrawlableCategory
+     */
+    private $category;
+
+    public function __construct(
+        Client $client,
+        EventDispatcher $dispatcher,
+        CrawlableCategory $category,
+        LoggerInterface $logger = null
+    ) {
         parent::__construct($client, $dispatcher, $logger);
         $this->categories = new ArrayCollection();
+        $this->category = $category;
     }
 
     /**
@@ -48,14 +58,14 @@ class CategoryCrawler extends Crawler
     public function start()
     {
         // for each given category begin crawl process
-        foreach ($this->categories as $category) {
+
             // create log context including source, category and spider name
-            $logContext = $this->generateLogContext($category);
+            $logContext = $this->generateLogContext();
 
             try {
                 // build spider
                 /** @var Spider $spider */
-                $spider = $category->spider();
+                $spider = $this->category->spider();
                 $spider = new $spider();
 
                 // build spider pipeline
@@ -95,23 +105,20 @@ class CategoryCrawler extends Crawler
             // dispatch spider.close event
             $this->dispatcher->dispatch(Events::SPIDER_CLOSED, new SpiderEvent($spider));
         }
-    }
 
     /**
-     * @param $category CrawlableCategory
-     *
      * @return array
      */
-    public function generateLogContext($category)
+    public function generateLogContext()
     {
         $matches = [];
-        preg_match('/(?<=Source\\\\).*?(?=\\\\)/', get_class($category), $matches);
+        preg_match('/(?<=Source\\\\).*?(?=\\\\)/', get_class($this->category), $matches);
         $source = strtolower($matches[0]);
-        preg_match('/(?<=\\\\)[^\\\\]+?(?=Spider$)/', $category->spider(), $matches);
+        preg_match('/(?<=\\\\)[^\\\\]+?(?=Spider$)/', $this->category->spider(), $matches);
         $spider = strtolower($matches[0]);
         $logContext = [
             'source' => $source,
-            'category' => $category->getName(),
+            'category' => $this->category->getName(),
             'spider' => $spider,
         ];
 
@@ -153,29 +160,5 @@ class CategoryCrawler extends Crawler
         } catch (IgnoreRequestException $e) {
             // just ignore request
         }
-    }
-
-    /**
-     * @return CrawlableCategory[]|ArrayCollection
-     */
-    public function getCategories()
-    {
-        return $this->categories;
-    }
-
-    /**
-     * @param CrawlableCategory[] $categories
-     */
-    public function setCategories($categories)
-    {
-        $this->categories = $categories;
-    }
-
-    /**
-     * @param CrawlableCategory $category
-     */
-    public function addCategory(CrawlableCategory $category)
-    {
-        $this->categories->add($category);
     }
 }
