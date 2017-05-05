@@ -32,7 +32,7 @@ class TelegramPublisherPipeline implements StageInterface
         if ($payload->mainMedia()) {
             $id = Request::sendPhoto([
                 'chat_id' => '@khabar_3anieh',
-                'caption' => $payload->title,
+                'caption' => $payload->title ."\n".$payload->url,
             ], $payload->mainMedia()->path)->getResult()->message_id;
         }
         $data = [

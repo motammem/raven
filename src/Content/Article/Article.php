@@ -46,6 +46,10 @@ class Article extends Model
 
     public function mainMedia()
     {
-        return $this->medias()->where('is_main', '=', '1')->first();
+        foreach ($this->medias as $media) {
+            if ($media->is_main == 1) {
+                return $media;
+            }
+        }
     }
 }

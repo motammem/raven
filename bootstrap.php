@@ -31,7 +31,7 @@ $dotenv->load();
  * Setup system wide logger
  */
 // stream handler
-$streamHandler = new \Monolog\Handler\StreamHandler(root_path(getenv('LOG_FILE')), \Psr\Log\LogLevel::ERROR);
+$streamHandler = new \Monolog\Handler\StreamHandler(root_path(getenv('LOG_FILE')), \Psr\Log\LogLevel::INFO);
 $formatter = new \Monolog\Formatter\LineFormatter();
 $formatter->includeStacktraces();
 $streamHandler->setFormatter($formatter);

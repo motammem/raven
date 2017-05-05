@@ -78,7 +78,7 @@ class CategoryCrawler extends Crawler
             // use spider
             foreach ($spider->startRequests() as $request) {
                 foreach ($this->handleRequest($request) as $item) {
-                    $this->logger->info('Piping item', ['item' => $item]);
+                    $this->logger->info('Piping item', $this->generateLogContext());
                     $pipeline->process($item);
                 }
             }

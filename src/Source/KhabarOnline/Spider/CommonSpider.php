@@ -16,6 +16,7 @@ use League\Pipeline\PipelineBuilderInterface;
 use Raven\Content\Article\Article;
 use Raven\Content\Article\ArticlePipeline;
 use Raven\Content\Media\Media;
+use Raven\Content\Media\Pipeline\MediaDownloaderPipeline;
 use Raven\Core\DomCrawler;
 use Raven\Core\Http\Request;
 use Raven\Core\Spider;
@@ -70,9 +71,9 @@ class CommonSpider extends Spider\PaginatedSpider
     {
         $builder
             ->add(new ArticlePipeline())
-//            ->add(new MediaDownloaderPipeline())
-            ->add(new TelegramPublisherPipeline())
+            ->add(new MediaDownloaderPipeline())
             ->add(new EloquentPersistencePipeline())//            ->add(new TelegramPublisherPipeline())
+            ->add(new TelegramPublisherPipeline())
         ;
     }
 }
