@@ -11,22 +11,22 @@
 
 namespace Raven\Core;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use GuzzleHttp\Client;
-use Psr\Log\LoggerInterface;
-use Raven\Core\Event\Events;
-use Raven\Core\Http\Request;
+use GuzzleHttp\Exception\RequestException;
 use League\Pipeline\Pipeline;
+use League\Pipeline\PipelineBuilder;
+use Psr\Log\LoggerInterface;
+use Raven\Category\CrawlableCategory;
+use Raven\Core\Event\Events;
 use Raven\Core\Event\ItemEvent;
-use Raven\Core\Event\SpiderEvent;
 use Raven\Core\Event\RequestEvent;
 use Raven\Core\Event\ResponseEvent;
-use League\Pipeline\PipelineBuilder;
-use Raven\Category\CrawlableCategory;
-use GuzzleHttp\Exception\RequestException;
+use Raven\Core\Event\SpiderEvent;
 use Raven\Core\Exception\CrawlerException;
-use Raven\Core\Exception\SpiderCloseException;
-use Doctrine\Common\Collections\ArrayCollection;
 use Raven\Core\Exception\IgnoreRequestException;
+use Raven\Core\Exception\SpiderCloseException;
+use Raven\Core\Http\Request;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class CategoryCrawler extends Crawler
@@ -57,59 +57,52 @@ class CategoryCrawler extends Crawler
      */
     public function start()
     {
-        // for each given category begin crawl process
+        // create log context including source, category and spider name
+        $logContext = $this->generateLogContext();
 
-            // create log context including source, category and spider name
-            $logContext = $this->generateLogContext();
+        try {
+            // build spider
+            /** @var Spider $spider */
+            $spider = $this->category->spider();
+            $spider = new $spider();
 
-            try {
-                // build spider
-                /** @var Spider $spider */
-                $spider = $this->category->spider();
-                $spider = new $spider();
+            // build spider pipeline
+            /** @var Pipeline $pipeline */
+            $builder = new PipelineBuilder();
+            $spider->buildPipeline($builder);
+            $pipeline = $builder->build();
 
-                // build spider pipeline
-                /** @var Pipeline $pipeline */
-                $builder = new PipelineBuilder();
-                $spider->buildPipeline($builder);
-                $pipeline = $builder->build();
+            // dispatch spider.open event
+            $this->dispatcher->dispatch(Events::SPIDER_OPENED, new SpiderEvent($spider));
 
-                // dispatch spider.open event
-                $this->dispatcher->dispatch(Events::SPIDER_OPENED, new SpiderEvent($spider));
-
-                // use spider
-                foreach ($spider->startRequests() as $request) {
-                    foreach ($this->handleRequest($request) as $item) {
-                        $this->logger->info('Piping item', ['item' => $item]);
-                        $pipeline->process($item);
-                    }
+            // use spider
+            foreach ($spider->startRequests() as $request) {
+                foreach ($this->handleRequest($request) as $item) {
+                    $this->logger->info('Piping item', ['item' => $item]);
+                    $pipeline->process($item);
                 }
-
-                // spider done it's job successfully
-                $this->logger->info('Spider finished successfully', $logContext);
-            } catch (SpiderCloseException $e) {
-                // close spider and ignore it
-                $this->logger->info('Spider closed cause '.strtolower($e->getCause()), $logContext);
-            } catch (\InvalidArgumentException $e) {
-                // parse errors
-                $trace = $e->getTrace();
-                $logContext['file'] = $trace[0]['file'];
-                $logContext['line'] = $trace[0]['line'];
-                throw new CrawlerException($logContext, 'Parser not matched:'.$e->getMessage(), 0, $e);
-            } catch (RequestException $e) {
-                // connection errors
-                $logContext['url'] = $e->getRequest()->getUri();
-                throw new CrawlerException($logContext, 'Connection timeout: '.$e->getMessage(), 0, $e);
             }
 
-            // dispatch spider.close event
-            $this->dispatcher->dispatch(Events::SPIDER_CLOSED, new SpiderEvent($spider));
+            // spider done it's job successfully
+            $this->logger->info('Spider finished successfully', $logContext);
+        } catch (SpiderCloseException $e) {
+            // close spider and ignore it
+            $this->logger->info('Spider closed cause ' . strtolower($e->getCause()), $logContext);
+        } catch (RequestException $e) {
+            // connection errors
+            $logContext['url'] = $e->getRequest()->getUri();
+            throw new CrawlerException($logContext, 'Connection timeout: ' . $e->getMessage(), 0, $e);
         }
 
+        // dispatch spider.close event
+        $this->dispatcher->dispatch(Events::SPIDER_CLOSED, new SpiderEvent($spider));
+    }
+
     /**
+     * @param array $additional
      * @return array
      */
-    public function generateLogContext()
+    public function generateLogContext($additional = array())
     {
         $matches = [];
         preg_match('/(?<=Source\\\\).*?(?=\\\\)/', get_class($this->category), $matches);
@@ -122,7 +115,7 @@ class CategoryCrawler extends Crawler
             'spider' => $spider,
         ];
 
-        return $logContext;
+        return array_merge($logContext, $additional);
     }
 
     /**
@@ -137,9 +130,7 @@ class CategoryCrawler extends Crawler
         // check for IgnoreRequestException
         try {
             $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
-            $this->logger->info('Requesting', [
-                'url' => (string) $request->getUri(),
-            ]);
+            $this->logger->info('Requesting', $this->generateLogContext(['url' => (string)$request->getUri()]));
             // perform request
             $response = $this->client->request($request->getMethod(), $request->getUri());
             $this->dispatcher->dispatch(Events::ON_RESPONSE, new ResponseEvent($response));
@@ -159,6 +150,15 @@ class CategoryCrawler extends Crawler
             }
         } catch (IgnoreRequestException $e) {
             // just ignore request
+        } catch (\InvalidArgumentException $e) {
+            // parse errors
+            $trace = $e->getTrace();
+            $logContext['file'] = $trace[0]['file'];
+            $logContext['line'] = $trace[0]['line'];
+            $uri = $trace[1]['args'][2]->getUri();
+            $logContext['url'] = (string)$uri;
+            throw new CrawlerException($this->generateLogContext($logContext), 'Parser not matched ' . $e->getMessage(),
+                $e->getCode(), $e);
         }
     }
 }

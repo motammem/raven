@@ -35,7 +35,7 @@ class HistoryEventSubscriber implements EventSubscriberInterface
     {
         if ( ! ($event->getItem() instanceof Request)) {
             $history = new History([
-                'hash' => sha1($event->getRequest()->getUri()),
+                'hash' => sha1($this->getRequestIdentity($event->getRequest())),
                 'url' => $event->getRequest()->getUri(),
                 'visited_at' => Carbon::now(),
             ]);
@@ -48,12 +48,22 @@ class HistoryEventSubscriber implements EventSubscriberInterface
 
     public function onRequest(RequestEvent $event)
     {
-        $isCrawledBefore = History::query()->where('hash', '=', sha1($event->getRequest()->getUri()))->count() > 0;
+        $isCrawledBefore = History::query()->where('hash', '=', sha1($this->getRequestIdentity($event->getRequest())))->count() > 0;
+
         if (getenv('CRAWL_STRATEGY_DEEP') != 'enable') {
             throw new SpiderCloseException('Reached duplicate item url');
         }
         if ($isCrawledBefore) {
             throw new IgnoreRequestException();
         }
+    }
+
+    private function getRequestIdentity(Request $request)
+    {
+        $identity = $request->getUri();
+        if ($request->hasIdentity()) {
+            $identity = $request->getIdentity();
+        }
+        return $identity;
     }
 }

@@ -11,48 +11,39 @@
 
 namespace Raven\Source\KhabarOnline\Spider;
 
-use Raven\Core\Util;
-use Raven\Core\Spider;
-use Raven\Core\DomCrawler;
-use Raven\Core\Http\Request;
 use GuzzleHttp\Psr7\Response;
-use Raven\Content\Media\Media;
+use League\Pipeline\PipelineBuilderInterface;
 use Raven\Content\Article\Article;
 use Raven\Content\Article\ArticlePipeline;
-use League\Pipeline\PipelineBuilderInterface;
-use Raven\Pipeline\TelegramPublisherPipeline;
+use Raven\Content\Media\Media;
+use Raven\Core\DomCrawler;
+use Raven\Core\Http\Request;
+use Raven\Core\Spider;
 use Raven\Pipeline\EloquentPersistencePipeline;
+use Raven\Pipeline\TelegramPublisherPipeline;
 
-class CommonSpider extends Spider
+class CommonSpider extends Spider\PaginatedSpider
 {
-    private $baseUrl = 'http://www.khabaronline.ir';
+    /**
+     * @inheritDoc
+     */
+    protected function getSinglePageAnchor()
+    {
+        return '.row.media h4 a';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function getNextPageAnchor()
+    {
+        return 'ul.pagination li.active + li a';
+    }
+
 
     public function getStartUrls()
     {
-        return [$this->baseUrl.'/list/culture/music'];
-    }
-
-    public function parse(DomCrawler $crawler, Response $response, Request $request)
-    {
-        $links = [];
-        $crawler->filter('.row.media h4 a')->each(function (DomCrawler $crawler) use (&$links) {
-            $rel = $crawler->attr('href');
-            if ($rel) {
-                $links[] = $rel;
-            }
-        });
-
-        // return single requests
-        foreach ($links as $link) {
-            yield new Request(Util::urljoin($this->baseUrl, $link), [$this, 'parseSingle']);
-        }
-
-        // when done return next page
-        $nextPageAnchor = $crawler->filter('ul.pagination li.active + li')->filter('a');
-        if ($nextPageAnchor->count()) {
-            $url = $nextPageAnchor->attr('href');
-            yield new Request(Util::urljoin($this->baseUrl, $url), [$this, 'parse']);
-        }
+        return ['http://www.khabaronline.ir/list/culture/music'];
     }
 
     public function parseSingle(DomCrawler $crawler, Response $response, Request $request)
@@ -60,7 +51,7 @@ class CommonSpider extends Spider
         $matches = [];
         $identity = preg_match('/(?<=\/)\d{5,7}(?=\/)/', $request->getUri(), $matches) ? $matches[0] : null;
         $article = new Article($identity, [
-            'title' => trim($crawler->filter('.newsTitle h6')->text()),
+            'title' => trim($crawler->filter('.newsTitle h2')->text()),
             'url' => $request->getUri(),
             'lead' => $crawler->filter('.leadCont')->count() ? $crawler->filter('.leadCont')->text() : null,
         ]);
