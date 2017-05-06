@@ -73,6 +73,6 @@ abstract class Spider
 
     public function buildExtensions(ExtensionBuilder $builder)
     {
-        $builder->add(HistoryExtension::class);
+//        $builder->add(HistoryExtension::class);
     }
 }

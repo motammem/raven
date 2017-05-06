@@ -136,25 +136,28 @@ class CategoryCrawler extends Crawler
     {
         // check for IgnoreRequestException
         try {
-            $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
-            $this->logger->info('Requesting', $this->generateLogContext(['url' => (string)$request->getUri()]));
-            // perform request
-            $response = $this->client->request($request->getMethod(), $request->getUri());
-            $this->dispatcher->dispatch(Events::ON_RESPONSE, new ResponseEvent($response));
-
-            // process callback results
-            $crawler = new DomCrawler($response->getBody()->getContents());
-            $results = call_user_func($request->getCallback(), $crawler, $response, $request);
-            foreach ($results as $result) {
-                $this->dispatcher->dispatch(Events::ITEM_SCRAPED, new ItemEvent($result, $request));
-                if ($result instanceof Request) {
-                    foreach ($this->handleRequest($result) as $item) {
-                        yield $item;
+            $requestsToPerform = [$request];
+            while (count($requestsToPerform) > 0) {
+                echo memory_get_usage()."\n";
+                $request = array_shift($requestsToPerform);
+                $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
+                $this->logger->info('Requesting', $this->generateLogContext(['url' => (string)$request->getUri()]));
+                // perform request
+                $response = $this->client->request($request->getMethod(), $request->getUri());
+                $this->dispatcher->dispatch(Events::ON_RESPONSE, new ResponseEvent($response));
+                // process callback results
+                $crawler = new DomCrawler($response->getBody()->getContents());
+                $results = call_user_func($request->getCallback(), $crawler, $response, $request);
+                foreach ($results as $result) {
+                    $this->dispatcher->dispatch(Events::ITEM_SCRAPED, new ItemEvent($result, $request));
+                    if ($result instanceof Request) {
+                        $requestsToPerform[] = $result;
+                    } else {
+                        yield $result;
                     }
-                } else {
-                    yield $result;
                 }
             }
+
         } catch (IgnoreRequestException $e) {
             // just ignore request
         } catch (\InvalidArgumentException $e) {
