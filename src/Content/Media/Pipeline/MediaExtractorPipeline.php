@@ -11,10 +11,10 @@
 
 namespace Raven\Content\Media\Pipeline;
 
-use Raven\Core\DomCrawler;
-use Raven\Content\Media\Media;
-use Raven\Content\Article\Article;
 use League\Pipeline\StageInterface;
+use Raven\Content\Article\Article;
+use Raven\Content\Media\Media;
+use Raven\Core\Parse\DomCrawler;
 
 class MediaExtractorPipeline implements StageInterface
 {

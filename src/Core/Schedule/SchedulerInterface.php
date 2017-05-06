@@ -9,10 +9,14 @@
 * file that was distributed with this source code.
 */
 
-namespace Raven\Core\Http;
+namespace Raven\Core\Schedule;
 
-use GuzzleHttp\Psr7\Response as GuzzleResponse;
+use Raven\Core\Spider\Spider;
 
-class Response extends GuzzleResponse
+interface SchedulerInterface
 {
+    /**
+     * @return Spider[]
+     */
+    public function getSpiders();
 }

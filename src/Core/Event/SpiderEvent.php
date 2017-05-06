@@ -11,7 +11,7 @@
 
 namespace Raven\Core\Event;
 
-use Raven\Core\Spider;
+use Raven\Core\Spider\Spider;
 use Symfony\Component\EventDispatcher\Event;
 
 class SpiderEvent extends Event

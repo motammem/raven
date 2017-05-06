@@ -13,8 +13,8 @@ namespace Tests\Raven\Functional\Core\Spider;
 
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
-use Raven\Core\DomCrawler;
 use Raven\Core\Http\Request;
+use Raven\Core\Parse\DomCrawler;
 use Raven\Core\Spider\PaginatedSpider;
 
 class PaginatedSpiderTest extends TestCase

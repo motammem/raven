@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Raven\Core;
+namespace Raven\Core\Infrastructure;
 
 trait Identity
 {

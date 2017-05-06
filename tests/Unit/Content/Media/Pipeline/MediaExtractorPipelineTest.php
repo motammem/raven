@@ -11,10 +11,10 @@
 
 namespace Tests\Raven\Unit\Content\Media\Pipeline;
 
-use Raven\Core\DomCrawler;
 use PHPUnit\Framework\TestCase;
 use Raven\Content\Article\Article;
 use Raven\Content\Media\Pipeline\MediaExtractorPipeline;
+use Raven\Core\Parse\DomCrawler;
 
 class MediaExtractorPipelineTest extends TestCase
 {

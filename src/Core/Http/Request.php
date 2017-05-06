@@ -59,6 +59,7 @@ class Request extends \GuzzleHttp\Psr7\Request
     }
 
     /**
+     * Resource identity for cases may url is not unique
      * @return string
      */
     public function getIdentity()

@@ -11,19 +11,20 @@
 
 namespace Raven\Source\KhabarOnline\Spider;
 
-use GuzzleHttp\Psr7\Response;
+
 use League\Pipeline\PipelineBuilderInterface;
 use Raven\Content\Article\Article;
 use Raven\Content\Article\ArticlePipeline;
 use Raven\Content\Media\Media;
 use Raven\Content\Media\Pipeline\MediaDownloaderPipeline;
-use Raven\Core\DomCrawler;
 use Raven\Core\Http\Request;
-use Raven\Core\Spider;
+use Raven\Core\Http\Response;
+use Raven\Core\Parse\DomCrawler;
+use Raven\Core\Spider\PaginatedSpider;
 use Raven\Pipeline\EloquentPersistencePipeline;
 use Raven\Pipeline\TelegramPublisherPipeline;
 
-class CommonSpider extends Spider\PaginatedSpider
+class CommonSpider extends PaginatedSpider
 {
     /**
      * @inheritDoc
@@ -44,7 +45,7 @@ class CommonSpider extends Spider\PaginatedSpider
 
     public function getStartUrls()
     {
-        return ['http://www.khabaronline.ir/list/culture/music'];
+        return ['http://www.khabaronline.ir/list/ict/software'];
     }
 
     public function parseSingle(DomCrawler $crawler, Response $response, Request $request)
@@ -71,9 +72,8 @@ class CommonSpider extends Spider\PaginatedSpider
     {
         $builder
             ->add(new ArticlePipeline())
-            ->add(new MediaDownloaderPipeline())
-            ->add(new EloquentPersistencePipeline())//            ->add(new TelegramPublisherPipeline())
-            ->add(new TelegramPublisherPipeline())
-        ;
+//            ->add(new MediaDownloaderPipeline())
+            ->add(new EloquentPersistencePipeline());//            ->add(new TelegramPublisherPipeline())
+//            ->add(new TelegramPublisherPipeline());
     }
 }

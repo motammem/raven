@@ -11,8 +11,8 @@
 
 namespace Raven\Core\Command;
 
-use GuzzleHttp\Client;
-use Raven\Core\CategoryCrawler;
+use Raven\Core\Http\Client;
+use Raven\Core\Strategy\Category\CategoryCrawler;
 use Raven\Source\KhabarOnline\Category\Culture;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

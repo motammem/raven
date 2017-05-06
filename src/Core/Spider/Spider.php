@@ -9,12 +9,15 @@
  * file that was distributed with this source code.
  */
 
-namespace Raven\Core;
+namespace Raven\Core\Spider;
 
-use Psr\Log\LoggerInterface;
-use Raven\Core\Http\Request;
-use GuzzleHttp\Psr7\Response;
 use League\Pipeline\PipelineBuilderInterface;
+use Psr\Log\LoggerInterface;
+use Raven\Core\Extension\History\HistoryExtension;
+use Raven\Core\ExtensionBuilder;
+use Raven\Core\Http\Request;
+use Raven\Core\Http\Response;
+use Raven\Core\Parse\DomCrawler;
 
 abstract class Spider
 {
@@ -66,5 +69,10 @@ abstract class Spider
     public function getLogger()
     {
         return $this->logger;
+    }
+
+    public function buildExtensions(ExtensionBuilder $builder)
+    {
+        $builder->add(HistoryExtension::class);
     }
 }

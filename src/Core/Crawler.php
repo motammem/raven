@@ -11,20 +11,22 @@
 
 namespace Raven\Core;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use GuzzleHttp\Client;
-use Psr\Log\NullLogger;
-use Psr\Log\LoggerInterface;
-use Raven\Core\Event\Events;
-use Raven\Core\Http\Request;
 use League\Pipeline\Pipeline;
+use League\Pipeline\PipelineBuilder;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+use Raven\Core\Event\Events;
 use Raven\Core\Event\ItemEvent;
-use Raven\Core\Event\SpiderEvent;
 use Raven\Core\Event\RequestEvent;
 use Raven\Core\Event\ResponseEvent;
-use League\Pipeline\PipelineBuilder;
-use Raven\Core\Exception\SpiderCloseException;
-use Doctrine\Common\Collections\ArrayCollection;
+use Raven\Core\Event\SpiderEvent;
 use Raven\Core\Exception\IgnoreRequestException;
+use Raven\Core\Exception\SpiderCloseException;
+use Raven\Core\Http\Request;
+use Raven\Core\Parse\DomCrawler;
+use Raven\Core\Spider\Spider;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class Crawler

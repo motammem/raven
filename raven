@@ -17,6 +17,7 @@ $application->setCatchExceptions(false);
 $application->add(new \Raven\Core\Command\RavenCommand());
 
 try {
+
     $application->run();
 } catch (\Raven\Core\Exception\CrawlerException $e) {
     global $logger;

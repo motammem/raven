@@ -9,15 +9,15 @@
  * file that was distributed with this source code.
  */
 
-namespace Raven\Core;
+namespace Raven\Core\Strategy\Category;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use League\Pipeline\Pipeline;
 use League\Pipeline\PipelineBuilder;
 use Psr\Log\LoggerInterface;
 use Raven\Category\CrawlableCategory;
+use Raven\Core\Crawler;
 use Raven\Core\Event\Events;
 use Raven\Core\Event\ItemEvent;
 use Raven\Core\Event\RequestEvent;
@@ -26,7 +26,10 @@ use Raven\Core\Event\SpiderEvent;
 use Raven\Core\Exception\CrawlerException;
 use Raven\Core\Exception\IgnoreRequestException;
 use Raven\Core\Exception\SpiderCloseException;
+use Raven\Core\ExtensionBuilder;
+use Raven\Core\Http\Client;
 use Raven\Core\Http\Request;
+use Raven\Core\Parse\DomCrawler;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class CategoryCrawler extends Crawler
@@ -62,9 +65,13 @@ class CategoryCrawler extends Crawler
 
         try {
             // build spider
-            /** @var Spider $spider */
+            /** @var \Raven\Core\Spider\Spider $spider */
             $spider = $this->category->spider();
             $spider = new $spider();
+
+            $extensionBuilder = new ExtensionBuilder();
+            $spider->buildExtensions($extensionBuilder);
+            $extensionBuilder->build($this->dispatcher);
 
             // build spider pipeline
             /** @var Pipeline $pipeline */

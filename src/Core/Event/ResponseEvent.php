@@ -11,7 +11,7 @@
 
 namespace Raven\Core\Event;
 
-use GuzzleHttp\Psr7\Response;
+use Raven\Core\Http\Response;
 use Symfony\Component\EventDispatcher\Event;
 
 class ResponseEvent extends Event

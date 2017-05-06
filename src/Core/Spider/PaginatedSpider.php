@@ -11,10 +11,9 @@
 
 namespace Raven\Core\Spider;
 
-use GuzzleHttp\Psr7\Response;
-use Raven\Core\DomCrawler;
 use Raven\Core\Http\Request;
-use Raven\Core\Spider;
+use Raven\Core\Http\Response;
+use Raven\Core\Parse\DomCrawler;
 
 abstract class PaginatedSpider extends Spider
 {
@@ -62,7 +61,7 @@ abstract class PaginatedSpider extends Spider
     }
 
     /**
-     * @param DomCrawler $crawler
+     * @param \Raven\Core\Parse\DomCrawler $crawler
      * @param Response $response
      * @param Request $request
      *
