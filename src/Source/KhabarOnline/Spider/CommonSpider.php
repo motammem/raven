@@ -11,23 +11,22 @@
 
 namespace Raven\Source\KhabarOnline\Spider;
 
-
-use League\Pipeline\PipelineBuilderInterface;
-use Raven\Content\Article\Article;
-use Raven\Content\Article\ArticlePipeline;
-use Raven\Content\Media\Media;
-use Raven\Content\Media\Pipeline\MediaDownloaderPipeline;
 use Raven\Core\Http\Request;
 use Raven\Core\Http\Response;
+use Raven\Content\Media\Media;
 use Raven\Core\Parse\DomCrawler;
+use Raven\Content\Article\Article;
 use Raven\Core\Spider\PaginatedSpider;
-use Raven\Pipeline\EloquentPersistencePipeline;
+use Raven\Content\Article\ArticlePipeline;
+use League\Pipeline\PipelineBuilderInterface;
 use Raven\Pipeline\TelegramPublisherPipeline;
+use Raven\Pipeline\EloquentPersistencePipeline;
+use Raven\Content\Media\Pipeline\MediaDownloaderPipeline;
 
 class CommonSpider extends PaginatedSpider
 {
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     protected function getSinglePageAnchor()
     {
@@ -35,13 +34,12 @@ class CommonSpider extends PaginatedSpider
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     protected function getNextPageAnchor()
     {
         return 'ul.pagination li.active + li a';
     }
-
 
     public function getStartUrls()
     {
@@ -73,7 +71,7 @@ class CommonSpider extends PaginatedSpider
         $builder
             ->add(new ArticlePipeline())
 //            ->add(new MediaDownloaderPipeline())
-            ->add(new EloquentPersistencePipeline());//            ->add(new TelegramPublisherPipeline())
+            ->add(new EloquentPersistencePipeline());
 //            ->add(new TelegramPublisherPipeline());
     }
 }

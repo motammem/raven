@@ -1,13 +1,13 @@
 <?php
 
 /*
-* This file is part of the raven package.
-*
-* (c) Amin Alizade <motammem@gmail.com>
-*
-* For the full copyright and license information, please view the LICENSE
-* file that was distributed with this source code.
-*/
+ * This file is part of the Raven project.
+ *
+ * (c) Amin Alizade <motammem@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
 namespace Raven\Core\Spider;
 
@@ -32,6 +32,7 @@ abstract class PaginatedSpider extends Spider
      * This option is used when a resource have more than one uri pointed to it.
      *
      * @param $link string Link of the resource.
+     *
      * @return string|void
      */
     protected function getIdentity($link)
@@ -39,7 +40,7 @@ abstract class PaginatedSpider extends Spider
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function parse(DomCrawler $crawler, Response $response, Request $request)
     {
@@ -62,8 +63,8 @@ abstract class PaginatedSpider extends Spider
 
     /**
      * @param \Raven\Core\Parse\DomCrawler $crawler
-     * @param Response $response
-     * @param Request $request
+     * @param Response                     $response
+     * @param Request                      $request
      *
      * @return mixed|Request[]
      */

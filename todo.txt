@@ -1,2 +1,3 @@
 //
 fix identity checking to prevent entering to details page
+implement log hierarchy for different classes with different log contexts

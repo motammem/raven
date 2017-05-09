@@ -9,7 +9,7 @@
 * file that was distributed with this source code.
 */
 
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__.'/vendor/autoload.php';
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 /*
@@ -17,7 +17,7 @@ use Illuminate\Database\Capsule\Manager as Capsule;
  */
 function root_path($dir = null)
 {
-    return __DIR__ . '/' . ltrim($dir, '/');
+    return __DIR__.'/'.ltrim($dir, '/');
 }
 
 
@@ -31,33 +31,50 @@ $dotenv->load();
  * Setup system wide logger
  */
 // stream handler
-$streamHandler = new \Monolog\Handler\StreamHandler(root_path(getenv('LOG_FILE')), \Psr\Log\LogLevel::INFO);
+$streamHandler = new \Monolog\Handler\StreamHandler(
+  root_path(getenv('LOG_FILE')), \Psr\Log\LogLevel::INFO
+);
 $formatter = new \Monolog\Formatter\LineFormatter();
 $formatter->includeStacktraces();
 $streamHandler->setFormatter($formatter);
 
 // telegram handler
 $telegramHandler = new \TelegramHandler\TelegramHandler(
-    getenv("TELEGRAM_API_KEY"),
-    '@kahbar_3anieh_dev',
-    \Monolog\Logger::ALERT
+  getenv("TELEGRAM_API_KEY"),
+  '@kahbar_3anieh_dev',
+  \Monolog\Logger::ALERT
 );
 $telegramHandler->setFormatter(new \TelegramHandler\TelegramFormatter());
 
 // creating logger
-$logger = new \Monolog\Logger('raven', [
+$logger = new \Monolog\Logger(
+  'raven', [
     $streamHandler,
-    //    $telegramHandler,
-]);
+    $telegramHandler,
+  ]
+);
 
 // register logger to listen errors
 \Monolog\ErrorHandler::register($logger);
+function _log($level, $message, $context = [])
+{
+    global $logger;
+    $logger->log($level, $message, $context);
+}
+
+function _logger()
+{
+    global $logger;
+
+    return $logger;
+}
 
 /*
  * Setup database layer
  */
 $capsule = new Capsule();
-$capsule->addConnection([
+$capsule->addConnection(
+  [
     'driver' => 'mysql',
     'host' => getenv("DATABASE_HOST"),
     'database' => getenv("DATABASE_NAME"),
@@ -66,7 +83,8 @@ $capsule->addConnection([
     'charset' => 'utf8',
     'collation' => 'utf8_unicode_ci',
     'prefix' => '',
-]);
+  ]
+);
 
 // Setup the Eloquent ORM... (optional; unless you've used setEventDispatcher())
 $capsule->bootEloquent();

@@ -28,13 +28,13 @@ class Request extends \GuzzleHttp\Psr7\Request
     /**
      * Request constructor.
      *
-     * @param string $uri
+     * @param string   $uri
      * @param callable $callback
-     * @param string $identity
-     * @param string $method
-     * @param array $headers
-     * @param null $body
-     * @param string $version
+     * @param string   $identity
+     * @param string   $method
+     * @param array    $headers
+     * @param null     $body
+     * @param string   $version
      */
     public function __construct(
         $uri,
@@ -59,7 +59,8 @@ class Request extends \GuzzleHttp\Psr7\Request
     }
 
     /**
-     * Resource identity for cases may url is not unique
+     * Resource identity for cases may url is not unique.
+     *
      * @return string
      */
     public function getIdentity()
@@ -78,9 +79,10 @@ class Request extends \GuzzleHttp\Psr7\Request
     public function joinUrl($link)
     {
         $url = Url::parse($link);
-        if (!$url->host) {
-            return "http://" . $this->getUri()->getHost() . '/' . ltrim($link, '/');
+        if ( ! $url->host) {
+            return 'http://'.$this->getUri()->getHost().'/'.ltrim($link, '/');
         }
+
         return $link;
     }
 }

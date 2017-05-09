@@ -11,20 +11,18 @@
 
 namespace Raven\Core\Spider;
 
-use League\Pipeline\PipelineBuilderInterface;
 use Psr\Log\LoggerInterface;
-use Raven\Core\Extension\History\HistoryExtension;
-use Raven\Core\ExtensionBuilder;
 use Raven\Core\Http\Request;
 use Raven\Core\Http\Response;
+use Raven\Core\ExtensionBuilder;
 use Raven\Core\Parse\DomCrawler;
+use League\Pipeline\PipelineBuilderInterface;
+use Raven\Core\Extension\History\HistoryExtension;
 
 abstract class Spider
 {
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
+    // fixme: replace context with logger
+    private $context = [];
 
     /**
      * @return \Generator|Request[]
@@ -55,24 +53,25 @@ abstract class Spider
      */
     abstract public function buildPipeline(PipelineBuilderInterface $builder);
 
-    /**
-     * @param LoggerInterface $logger
-     */
-    public function setLogger($logger)
-    {
-        $this->logger = $logger;
-    }
-
-    /**
-     * @return LoggerInterface
-     */
-    public function getLogger()
-    {
-        return $this->logger;
-    }
 
     public function buildExtensions(ExtensionBuilder $builder)
     {
-//        $builder->add(HistoryExtension::class);
+        //        $builder->add(HistoryExtension::class);
+    }
+
+    /**
+     * @param array $context
+     */
+    public function setContext($context)
+    {
+        $this->context = $context;
+    }
+
+    /**
+     * @return array
+     */
+    public function getContext()
+    {
+        return $this->context;
     }
 }

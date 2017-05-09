@@ -11,8 +11,8 @@
 
 namespace Raven\Content\Article;
 
-use League\Pipeline\PipelineBuilderInterface;
 use Raven\Core\Spider\Spider;
+use League\Pipeline\PipelineBuilderInterface;
 
 abstract class ArticleSpider extends Spider
 {

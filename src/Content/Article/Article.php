@@ -11,10 +11,10 @@
 
 namespace Raven\Content\Article;
 
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Raven\Content\Media\Media;
-use Raven\Core\Infrastructure\Identity;
 use Raven\Core\Infrastructure\Model;
+use Raven\Core\Infrastructure\Identity;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * Class Article.

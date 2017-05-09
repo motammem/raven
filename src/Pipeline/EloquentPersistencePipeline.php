@@ -21,7 +21,8 @@ class EloquentPersistencePipeline implements StageInterface
     {
         if ($payload instanceof Model) {
             try {
-                $payload->push();
+                $payload->save();
+
             } catch (QueryException $e) {
                 // just ignore duplicate entered content
             }

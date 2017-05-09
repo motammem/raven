@@ -24,9 +24,10 @@ class History extends Model
     ];
 
     /**
-     * Checks if node exist in history
+     * Checks if node exist in history.
      *
      * @param $identity string Identity of the node
+     *
      * @return bool
      */
     public static function hasNode($identity)

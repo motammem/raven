@@ -33,4 +33,12 @@ class RequestEvent extends Event
     {
         return $this->request;
     }
+
+    /**
+     * @param \Raven\Core\Http\Request $request
+     */
+    public function setRequest($request)
+    {
+        $this->request = $request;
+    }
 }

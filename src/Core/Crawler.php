@@ -11,82 +11,86 @@
 
 namespace Raven\Core;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use GuzzleHttp\Client;
-use League\Pipeline\Pipeline;
-use League\Pipeline\PipelineBuilder;
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
+use Monolog\Logger;
 use Raven\Core\Event\Events;
+use Raven\Core\Http\Request;
+use League\Pipeline\Pipeline;
+use Raven\Core\Spider\Spider;
 use Raven\Core\Event\ItemEvent;
+use Raven\Core\Parse\DomCrawler;
+use Raven\Core\Event\SpiderEvent;
 use Raven\Core\Event\RequestEvent;
 use Raven\Core\Event\ResponseEvent;
-use Raven\Core\Event\SpiderEvent;
-use Raven\Core\Exception\IgnoreRequestException;
+use League\Pipeline\PipelineBuilder;
 use Raven\Core\Exception\SpiderCloseException;
-use Raven\Core\Http\Request;
-use Raven\Core\Parse\DomCrawler;
-use Raven\Core\Spider\Spider;
+use Raven\Core\Exception\IgnoreRequestException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use GuzzleHttp\Exception\RequestException;
+
 
 class Crawler
 {
-    /**
-     * @var ArrayCollection|Spider[]
-     */
-    protected $spiders;
-
     /**
      * @var Client
      */
     protected $client;
 
     /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-    /**
      * @var EventDispatcher
      */
     protected $dispatcher;
 
-    public function __construct(Client $client, EventDispatcher $dispatcher, LoggerInterface $logger = null)
+    public function __construct(Client $client, EventDispatcher $dispatcher)
     {
-        $this->spiders = new ArrayCollection();
         $this->client = $client;
-        if ( ! $logger) {
-            $logger = new NullLogger();
-        }
-        $this->logger = $logger;
         $this->dispatcher = $dispatcher;
     }
 
     /**
      * Start crawling spiders.
+     *
+     * @param \Raven\Core\Spider\Spider $spider
      */
-    public function start()
+    public function start(Spider $spider)
     {
-        foreach ($this->spiders as $spider) {
-            try {
-                // build spider pipeline
-                $builder = new PipelineBuilder();
-                $spider->buildPipeline($builder);
-                /** @var Pipeline $pipeline */
-                $pipeline = $builder->build();
-                $this->dispatcher->dispatch(Events::SPIDER_OPENED, new SpiderEvent($spider));
+        // create log context including source, category and spider name
+        try {
+            // build spider
+            /** @var \Raven\Core\Spider\Spider $spider */
+            $spider = new $spider();
 
-                foreach ($spider->startRequests() as $request) {
-                    foreach ($this->handleRequest($request) as $item) {
-                        $this->logger->info('Piping item', ['item' => $item]);
-                        $pipeline->process($item);
-                    }
+            $extensionBuilder = new ExtensionBuilder();
+            $spider->buildExtensions($extensionBuilder);
+            $extensionBuilder->build($this->dispatcher);
+
+            // build spider pipeline
+            /** @var Pipeline $pipeline */
+            $builder = new PipelineBuilder();
+            $spider->buildPipeline($builder);
+            $pipeline = $builder->build();
+
+            // dispatch spider.open event
+            $this->dispatcher->dispatch(Events::SPIDER_OPENED, new SpiderEvent($spider));
+
+            // use spider
+            foreach ($spider->startRequests() as $request) {
+                foreach ($this->handleRequest($request) as $item) {
+                    _log(Logger::INFO, 'Piping item');
+                    $pipeline->process($item);
                 }
-            } catch (SpiderCloseException $e) {
-                $this->logger->info('Spider closed cause '.strtolower($e->getCause()), $e->getContext());
             }
-            $this->dispatcher->dispatch(Events::SPIDER_CLOSED, new SpiderEvent($spider));
+
+            // spider done it's job successfully
+            _log(Logger::INFO, 'Spider finished successfully');
+
+        } catch (SpiderCloseException $e) {
+            // close spider and ignore it
+            _log(Logger::INFO, 'Spider closed cause ' . strtolower($e->getCause()));
         }
+        // dispatch spider.close event
+        $this->dispatcher->dispatch(Events::SPIDER_CLOSED, new SpiderEvent($spider));
+
     }
 
     /**
@@ -100,54 +104,41 @@ class Crawler
     {
         // check for IgnoreRequestException
         try {
-            $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
-            $this->logger->info('Requesting', [
-                'url' => (string) $request->getUri(),
-            ]);
-
-            // perform request
-            $response = $this->client->request($request->getMethod(), $request->getUri());
-            $this->dispatcher->dispatch(Events::ON_RESPONSE, new ResponseEvent($response));
-
-            // process callback results
-            $crawler = new DomCrawler($response->getBody()->getContents());
-            $results = call_user_func($request->getCallback(), $crawler, $response, $request);
-            foreach ($results as $result) {
-                $this->dispatcher->dispatch(Events::ITEM_SCRAPED, new ItemEvent($result, $request));
-                if ($result instanceof Request) {
-                    foreach ($this->handleRequest($result) as $item) {
-                        yield $item;
+            $requestsToPerform = [$request];
+            while (count($requestsToPerform) > 0) {
+                $request = array_shift($requestsToPerform);
+                $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
+                _log(Logger::INFO,'Requesting', ['url' => (string)$request->getUri(),'agent'=>$request->getHeaders()]);
+                // perform request
+                $response = $this->client->request($request->getMethod(), $request->getUri());
+                $this->dispatcher->dispatch(Events::ON_RESPONSE, new ResponseEvent($response));
+                // process callback results
+                $crawler = new DomCrawler($response->getBody()->getContents());
+                $results = call_user_func($request->getCallback(), $crawler, $response, $request);
+                foreach ($results as $result) {
+                    $this->dispatcher->dispatch(Events::ITEM_SCRAPED, new ItemEvent($result, $request));
+                    if ($result instanceof Request) {
+                        $requestsToPerform[] = $result;
+                    } else {
+                        yield $result;
                     }
-                } else {
-                    yield $result;
                 }
             }
+
         } catch (IgnoreRequestException $e) {
             // just ignore request
+        } catch (\InvalidArgumentException $e) {
+            // parse errors
+            $trace = $e->getTrace();
+            $logContext['file'] = $trace[0]['file'];
+            $logContext['line'] = $trace[0]['line'];
+            $uri = $trace[1]['args'][2]->getUri();
+            $logContext['url'] = (string)$uri;
+            _log(Logger::ERROR, "Parser not matched", $logContext);
+        }catch (RequestException $e) {
+            // connection errors
+            $logContext['url'] = $e->getRequest()->getUri();
+            _log(Logger::ERROR,"Connection timeout", $logContext);
         }
-    }
-
-    /**
-     * @return Spider[]|ArrayCollection
-     */
-    public function getSpiders()
-    {
-        return $this->spiders;
-    }
-
-    /**
-     * @param Spider[] $spiders
-     */
-    public function setSpiders($spiders)
-    {
-        $this->spiders = $spiders;
-    }
-
-    /**
-     * @param Spider $spider
-     */
-    public function addSpider(Spider $spider)
-    {
-        $this->spiders->add($spider);
     }
 }

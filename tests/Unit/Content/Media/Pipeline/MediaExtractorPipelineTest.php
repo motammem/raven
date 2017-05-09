@@ -12,9 +12,9 @@
 namespace Tests\Raven\Unit\Content\Media\Pipeline;
 
 use PHPUnit\Framework\TestCase;
+use Raven\Core\Parse\DomCrawler;
 use Raven\Content\Article\Article;
 use Raven\Content\Media\Pipeline\MediaExtractorPipeline;
-use Raven\Core\Parse\DomCrawler;
 
 class MediaExtractorPipelineTest extends TestCase
 {
