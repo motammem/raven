@@ -16,7 +16,6 @@ use Raven\Source\KhabarOnline\Category\Culture;
 
 class CategorySequentialScheduler implements SchedulerInterface
 {
-
     /**
      * @var CrawlableCategory[]
      */
@@ -41,7 +40,7 @@ class CategorySequentialScheduler implements SchedulerInterface
         foreach ($this->categories as $categoryClass) {
             $category = new $categoryClass();
             /** @var \Raven\Core\Spider\Spider $spider */
-            $spiderClass= $category->spider();
+            $spiderClass = $category->spider();
             $spider = new $spiderClass();
             $matches = [];
             preg_match('/(?<=Source\\\\).*?(?=\\\\)/', get_class($category), $matches);

@@ -11,7 +11,6 @@
 
 namespace Raven\Core\Spider;
 
-use Psr\Log\LoggerInterface;
 use Raven\Core\Http\Request;
 use Raven\Core\Http\Response;
 use Raven\Core\ExtensionBuilder;
@@ -53,10 +52,9 @@ abstract class Spider
      */
     abstract public function buildPipeline(PipelineBuilderInterface $builder);
 
-
     public function buildExtensions(ExtensionBuilder $builder)
     {
-        //        $builder->add(HistoryExtension::class);
+        $builder->add(HistoryExtension::class);
     }
 
     /**

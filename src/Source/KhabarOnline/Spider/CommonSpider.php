@@ -14,6 +14,7 @@ namespace Raven\Source\KhabarOnline\Spider;
 use Raven\Core\Http\Request;
 use Raven\Core\Http\Response;
 use Raven\Content\Media\Media;
+use Raven\Core\ExtensionBuilder;
 use Raven\Core\Parse\DomCrawler;
 use Raven\Content\Article\Article;
 use Raven\Core\Spider\PaginatedSpider;
@@ -73,5 +74,12 @@ class CommonSpider extends PaginatedSpider
 //            ->add(new MediaDownloaderPipeline())
             ->add(new EloquentPersistencePipeline());
 //            ->add(new TelegramPublisherPipeline());
+    }
+
+    public function buildExtensions(ExtensionBuilder $builder)
+    {
+        parent::buildExtensions(
+          $builder
+        );
     }
 }

@@ -13,19 +13,13 @@ namespace Raven\Pipeline;
 
 use League\Pipeline\StageInterface;
 use Raven\Core\Infrastructure\Model;
-use Illuminate\Database\QueryException;
 
 class EloquentPersistencePipeline implements StageInterface
 {
     public function __invoke($payload)
     {
         if ($payload instanceof Model) {
-            try {
-                $payload->save();
-
-            } catch (QueryException $e) {
-                // just ignore duplicate entered content
-            }
+            $payload->save();
         }
 
         return $payload;

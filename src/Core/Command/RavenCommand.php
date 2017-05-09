@@ -11,20 +11,19 @@
 
 namespace Raven\Core\Command;
 
-use Monolog\Processor\MemoryUsageProcessor;
-use Monolog\Processor\UidProcessor;
 use Raven\Core\Crawler;
 use Raven\Core\Http\Client;
-use Raven\Core\Schedule\CategorySequentialScheduler;
 use Raven\Core\Spider\Spider;
+use Monolog\Processor\UidProcessor;
+use Monolog\Processor\MemoryUsageProcessor;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Raven\Core\Schedule\CategorySequentialScheduler;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class RavenCommand extends Command
 {
-
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $client = new Client();
@@ -40,12 +39,12 @@ class RavenCommand extends Command
         _logger()->popProcessor();
     }
 
-
     protected function setupLogging(Spider $spider)
     {
         _logger()->pushProcessor(
           function ($log) use ($spider) {
               $log['extra'] = array_merge($spider->getContext(), $log['extra']);
+
               return $log;
           }
         );

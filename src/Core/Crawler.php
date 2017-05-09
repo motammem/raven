@@ -11,8 +11,8 @@
 
 namespace Raven\Core;
 
-use GuzzleHttp\Client;
 use Monolog\Logger;
+use GuzzleHttp\Client;
 use Raven\Core\Event\Events;
 use Raven\Core\Http\Request;
 use League\Pipeline\Pipeline;
@@ -23,11 +23,10 @@ use Raven\Core\Event\SpiderEvent;
 use Raven\Core\Event\RequestEvent;
 use Raven\Core\Event\ResponseEvent;
 use League\Pipeline\PipelineBuilder;
+use GuzzleHttp\Exception\RequestException;
 use Raven\Core\Exception\SpiderCloseException;
 use Raven\Core\Exception\IgnoreRequestException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use GuzzleHttp\Exception\RequestException;
-
 
 class Crawler
 {
@@ -83,14 +82,12 @@ class Crawler
 
             // spider done it's job successfully
             _log(Logger::INFO, 'Spider finished successfully');
-
         } catch (SpiderCloseException $e) {
             // close spider and ignore it
-            _log(Logger::INFO, 'Spider closed cause ' . strtolower($e->getCause()));
+            _log(Logger::INFO, 'Spider closed cause '.strtolower($e->getCause()));
         }
         // dispatch spider.close event
         $this->dispatcher->dispatch(Events::SPIDER_CLOSED, new SpiderEvent($spider));
-
     }
 
     /**
@@ -107,8 +104,12 @@ class Crawler
             $requestsToPerform = [$request];
             while (count($requestsToPerform) > 0) {
                 $request = array_shift($requestsToPerform);
-                $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
-                _log(Logger::INFO,'Requesting', ['url' => (string)$request->getUri(),'agent'=>$request->getHeaders()]);
+                try {
+                    $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
+                } catch (IgnoreRequestException $e) {
+                    continue;
+                }
+                _log(Logger::INFO, 'Requesting', ['url' => (string) $request->getUri(), 'agent' => $request->getHeaders()]);
                 // perform request
                 $response = $this->client->request($request->getMethod(), $request->getUri());
                 $this->dispatcher->dispatch(Events::ON_RESPONSE, new ResponseEvent($response));
@@ -124,8 +125,6 @@ class Crawler
                     }
                 }
             }
-
-        } catch (IgnoreRequestException $e) {
             // just ignore request
         } catch (\InvalidArgumentException $e) {
             // parse errors
@@ -133,12 +132,12 @@ class Crawler
             $logContext['file'] = $trace[0]['file'];
             $logContext['line'] = $trace[0]['line'];
             $uri = $trace[1]['args'][2]->getUri();
-            $logContext['url'] = (string)$uri;
-            _log(Logger::ERROR, "Parser not matched", $logContext);
-        }catch (RequestException $e) {
+            $logContext['url'] = (string) $uri;
+            _log(Logger::ERROR, 'Parser not matched', $logContext);
+        } catch (RequestException $e) {
             // connection errors
             $logContext['url'] = $e->getRequest()->getUri();
-            _log(Logger::ERROR,"Connection timeout", $logContext);
+            _log(Logger::ERROR, 'Connection timeout', $logContext);
         }
     }
 }
