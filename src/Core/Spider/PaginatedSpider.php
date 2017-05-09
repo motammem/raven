@@ -14,9 +14,15 @@ namespace Raven\Core\Spider;
 use Raven\Core\Http\Request;
 use Raven\Core\Http\Response;
 use Raven\Core\Parse\DomCrawler;
+use Raven\Core\Exception\SpiderCloseException;
 
 abstract class PaginatedSpider extends Spider
 {
+    /**
+     * @var int
+     */
+    protected $currentPage = 1;
+
     /**
      * @return string CSS selector of single page anchor last element of selector should end with `a` tag
      */
@@ -31,7 +37,7 @@ abstract class PaginatedSpider extends Spider
      * Identity of the resource, if it's same as url leave it blank
      * This option is used when a resource have more than one uri pointed to it.
      *
-     * @param $link string Link of the resource.
+     * @param $link string Link of the resource
      *
      * @return string|void
      */
@@ -55,6 +61,11 @@ abstract class PaginatedSpider extends Spider
             }
         }
 
+        if (getenv('CRAWL_STRATEGY_PAGINATE') == 'enable' && $this->currentPage == getenv('CRAWL_STRATEGY_PAGINATE_LIMIT')) {
+            throw new SpiderCloseException(sprintf('Reached page limit %s', $this->currentPage));
+        }
+
+        ++$this->currentPage;
         $nextPage = $crawler->filter($this->getNextPageAnchor());
         if ($nextPage->count()) {
             yield new Request($request->joinUrl($nextPage->attr('href')), [$this, 'parse']);
