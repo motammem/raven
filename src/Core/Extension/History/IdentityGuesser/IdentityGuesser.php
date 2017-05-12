@@ -20,7 +20,7 @@ class IdentityGuesser implements IdentityGuesserInterface
      */
     public function guess(Request $request)
     {
-        $identity = (string)$request->getUri();
+        $identity = (string) $request->getUri();
         if ($request->hasIdentity()) {
             $identity = $request->getIdentity();
         }

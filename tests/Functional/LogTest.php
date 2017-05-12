@@ -11,11 +11,10 @@
 
 namespace Tests\Raven\Functional;
 
-use Monolog\Logger;
+use Raven\Core\Http\Request;
 use PHPUnit\Framework\TestCase;
 use Raven\Core\Extension\History\History;
 use Raven\Core\Extension\History\IdentityGuesser\IdentityGuesser;
-use Raven\Core\Http\Request;
 
 class LogTest extends TestCase
 {
@@ -24,7 +23,7 @@ class LogTest extends TestCase
         $gusser = new IdentityGuesser();
         $url = 'http://www.khabaronline.ir/(X(1)S(emohoan2j24nsc4x4w0avlbx))/detail/664224/ict/software';
         $identity = preg_match('/(?<=\/)\d{5,7}(?=\/)/', $url, $matches) ? $matches[0] : null;
-        $request = new Request($url,[],'664224');
+        $request = new Request($url, [], '664224');
 
         dd(History::query()->where('hash', '=', sha1($identity))->count() > 0);
     }

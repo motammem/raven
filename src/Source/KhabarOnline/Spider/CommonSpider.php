@@ -48,13 +48,12 @@ class CommonSpider extends PaginatedSpider
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     protected function getIdentity($link)
     {
         return preg_match('/(?<=\/)\d{5,7}(?=\/)/', $link, $matches) ? $matches[0] : null;
     }
-
 
     public function parseSingle(DomCrawler $crawler, Response $response, Request $request)
     {

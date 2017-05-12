@@ -105,7 +105,7 @@ class Crawler
                 try {
                     $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
                 } catch (IgnoreRequestException $e) {
-                    _log(Logger::INFO,'ignoring request',[(string)$request->getUri()]);
+                    _log(Logger::INFO, 'ignoring request', [(string) $request->getUri()]);
                     continue;
                 }
                 _log(Logger::INFO, 'Requesting', ['url' => (string) $request->getUri(), 'agent' => $request->getHeaders()]);
