@@ -1,3 +1,5 @@
 //
 fix identity checking to prevent entering to details page
 implement log hierarchy for different classes with different log contexts
+measure request times and whole spider running time
+track sources to get optimized resource crawl time

@@ -13,6 +13,9 @@ namespace Raven\Core\Schedule;
 
 use Raven\Core\Spider\Spider;
 
+/**
+ * Interface SchedulerInterface.
+ */
 interface SchedulerInterface
 {
     /**

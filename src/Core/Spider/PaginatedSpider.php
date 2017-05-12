@@ -50,22 +50,31 @@ abstract class PaginatedSpider extends Spider
      */
     public function parse(DomCrawler $crawler, Response $response, Request $request)
     {
+        // if single page anchor exists
         $singlePages = $crawler->filter($this->getSinglePageAnchor());
         if ($singlePages->count()) {
             $singlePageLinks = [];
+            // extract links
             $singlePages->each(function (DomCrawler $crawler) use (&$singlePageLinks) {
                 $singlePageLinks[] = $crawler->attr('href');
             });
+
+            // make request for each link
             foreach ($singlePageLinks as $link) {
                 yield new Request($request->joinUrl($link), [$this, 'parseSingle'], $this->getIdentity($link));
             }
         }
 
+        // if paginate strategy is enabled
+        // and current page is equal to it's limit defined in strategy, then stop crawling!
         if (getenv('CRAWL_STRATEGY_PAGINATE') == 'enable' && $this->currentPage == getenv('CRAWL_STRATEGY_PAGINATE_LIMIT')) {
-            throw new SpiderCloseException(sprintf('Reached page limit %s', $this->currentPage));
+            throw new SpiderCloseException(sprintf('reached page limit %s', $this->currentPage));
         }
 
+        // increase page counter
         ++$this->currentPage;
+
+        // if next page anchor exist, request it's link
         $nextPage = $crawler->filter($this->getNextPageAnchor());
         if ($nextPage->count()) {
             yield new Request($request->joinUrl($nextPage->attr('href')), [$this, 'parse']);

@@ -12,7 +12,6 @@
 namespace Raven\Core\Schedule;
 
 use Raven\Category\CrawlableCategory;
-use Raven\Source\KhabarOnline\Category\Culture;
 
 class CategorySequentialScheduler implements SchedulerInterface
 {
@@ -26,9 +25,12 @@ class CategorySequentialScheduler implements SchedulerInterface
      */
     public function __construct()
     {
-        $this->categories = [
-          Culture::class,
-        ];
+        $this->categories = CrawlableCategory::query()
+          ->orderBy('last_run', 'desc')
+          ->where('is_active', '=', '1')
+          ->limit(2)
+          ->get()
+        ;
     }
 
     /**
@@ -37,20 +39,15 @@ class CategorySequentialScheduler implements SchedulerInterface
     public function getSpiders()
     {
         $spiders = [];
-        foreach ($this->categories as $categoryClass) {
-            $category = new $categoryClass();
-            /** @var \Raven\Core\Spider\Spider $spider */
-            $spiderClass = $category->spider();
+        foreach ($this->categories as $crawlableCategory) {
+            $crawlableCategory->last_run = new \DateTime();
+            $crawlableCategory->save();
+            $spiderClass = $crawlableCategory->spider->class;
             $spider = new $spiderClass();
-            $matches = [];
-            preg_match('/(?<=Source\\\\).*?(?=\\\\)/', get_class($category), $matches);
-            $source = strtolower($matches[0]);
-            preg_match('/(?<=\\\\)[^\\\\]+?(?=Spider$)/', get_class($spider), $matches);
-            $spiderName = strtolower($matches[0]);
             $spider->setContext([
-              'source' => $source,
-              'category' => $category->getName(),
-              'spider' => $spiderName,
+              'source' => $crawlableCategory->source->name,
+              'category' => $crawlableCategory->name,
+              'spider' => $crawlableCategory->spider->name,
             ]);
             $spiders[] = $spider;
         }

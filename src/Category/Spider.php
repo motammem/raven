@@ -9,12 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace Raven\Source\KhabarOnline;
+namespace Raven\Category;
 
-class KhabarOnlineSource
+use Raven\Core\Infrastructure\Model;
+
+class Spider extends Model
 {
-    public function getName()
-    {
-        return 'khabaronline';
-    }
+    protected $table = 'spider';
 }

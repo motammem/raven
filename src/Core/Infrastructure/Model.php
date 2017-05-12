@@ -16,6 +16,9 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Model extends \Illuminate\Database\Eloquent\Model
 {
+    protected static $unguarded = true;
+    public $timestamps = false;
+
     public function push()
     {
         if ( ! $this->save()) {

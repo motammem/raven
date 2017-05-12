@@ -11,43 +11,16 @@
 
 namespace Raven\Core\Command;
 
-use Raven\Core\Crawler;
-use Raven\Core\Http\Client;
-use Raven\Core\Spider\Spider;
-use Monolog\Processor\UidProcessor;
-use Monolog\Processor\MemoryUsageProcessor;
+use Raven\Core\CrawlRunner;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Raven\Core\Schedule\CategorySequentialScheduler;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class RavenCommand extends Command
 {
     public function execute(InputInterface $input, OutputInterface $output)
     {
-        $client = new Client();
-        $dispatches = new EventDispatcher();
-        $scheduler = new CategorySequentialScheduler();
-        $crawler = new Crawler($client, $dispatches);
-        _logger()->pushProcessor(new UidProcessor());
-        _logger()->pushProcessor(new MemoryUsageProcessor());
-        foreach ($scheduler->getSpiders() as $spider) {
-            $this->setupLogging($spider);
-            $crawler->start($spider);
-        }
-        _logger()->popProcessor();
-    }
-
-    protected function setupLogging(Spider $spider)
-    {
-        _logger()->pushProcessor(
-          function ($log) use ($spider) {
-              $log['extra'] = array_merge($spider->getContext(), $log['extra']);
-
-              return $log;
-          }
-        );
+        CrawlRunner::run();
     }
 
     protected function configure()

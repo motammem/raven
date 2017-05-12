@@ -55,10 +55,7 @@ class Crawler
     {
         // create log context including source, category and spider name
         try {
-            // build spider
             /** @var \Raven\Core\Spider\Spider $spider */
-            $spider = new $spider();
-
             $extensionBuilder = new ExtensionBuilder();
             $spider->buildExtensions($extensionBuilder);
             $extensionBuilder->build($this->dispatcher);
@@ -101,12 +98,14 @@ class Crawler
     {
         // check for IgnoreRequestException
         try {
+            /** @var Request[] $requestsToPerform */
             $requestsToPerform = [$request];
             while (count($requestsToPerform) > 0) {
                 $request = array_shift($requestsToPerform);
                 try {
                     $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
                 } catch (IgnoreRequestException $e) {
+                    _log(Logger::INFO,'ignoring request',[(string)$request->getUri()]);
                     continue;
                 }
                 _log(Logger::INFO, 'Requesting', ['url' => (string) $request->getUri(), 'agent' => $request->getHeaders()]);

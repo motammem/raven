@@ -37,12 +37,12 @@ $streamHandler = new \Monolog\Handler\StreamHandler(
 $formatter = new \Monolog\Formatter\LineFormatter();
 $formatter->includeStacktraces();
 $streamHandler->setFormatter($formatter);
-
+ini_set('expect.timeout', 0);
 // telegram handler
 $telegramHandler = new \TelegramHandler\TelegramHandler(
   getenv("TELEGRAM_API_KEY"),
   '@kahbar_3anieh_dev',
-  \Monolog\Logger::ALERT
+  \Monolog\Logger::ERROR
 );
 $telegramHandler->setFormatter(new \TelegramHandler\TelegramFormatter());
 
@@ -73,8 +73,7 @@ function _logger()
  * Setup database layer
  */
 $capsule = new Capsule();
-$capsule->addConnection(
-  [
+$capsule->addConnection([
     'driver' => 'mysql',
     'host' => getenv("DATABASE_HOST"),
     'database' => getenv("DATABASE_NAME"),
@@ -83,8 +82,7 @@ $capsule->addConnection(
     'charset' => 'utf8',
     'collation' => 'utf8_unicode_ci',
     'prefix' => '',
-  ]
-);
+  ]);
 
 // Setup the Eloquent ORM... (optional; unless you've used setEventDispatcher())
 $capsule->bootEloquent();

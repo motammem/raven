@@ -72,12 +72,14 @@ class HistoryEventSubscriber implements EventSubscriberInterface
      */
     public function onRequest(RequestEvent $event)
     {
-        if (getenv('CRAWL_STRATEGY_DEEP') != 'enable') {
-            throw new SpiderCloseException('Reached duplicate item url');
+        $identity = $this->identityGuesser->guess($event->getRequest());
+
+        $hasNode = History::hasNode($identity);
+        if (getenv('CRAWL_STRATEGY_DEEP') != 'enable' && $hasNode) {
+            throw new SpiderCloseException('reached duplicate item url');
         }
 
-        $identity = $this->identityGuesser->guess($event->getRequest());
-        if (History::hasNode($identity)) {
+        if ($hasNode) {
             throw new IgnoreRequestException();
         }
     }

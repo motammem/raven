@@ -47,6 +47,15 @@ class CommonSpider extends PaginatedSpider
         return ['http://www.khabaronline.ir/list/ict/software'];
     }
 
+    /**
+     * @inheritDoc
+     */
+    protected function getIdentity($link)
+    {
+        return preg_match('/(?<=\/)\d{5,7}(?=\/)/', $link, $matches) ? $matches[0] : null;
+    }
+
+
     public function parseSingle(DomCrawler $crawler, Response $response, Request $request)
     {
         $matches = [];
@@ -78,8 +87,6 @@ class CommonSpider extends PaginatedSpider
 
     public function buildExtensions(ExtensionBuilder $builder)
     {
-        parent::buildExtensions(
-          $builder
-        );
+        parent::buildExtensions($builder);
     }
 }

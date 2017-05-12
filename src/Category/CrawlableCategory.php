@@ -11,38 +11,32 @@
 
 namespace Raven\Category;
 
+use Raven\Core\Infrastructure\Model;
+
 /**
  * Class CrawlableCategory.
  */
-abstract class CrawlableCategory
+class CrawlableCategory extends Model
 {
-    /**
-     * @return string Fully qualified url of the category
-     */
-    abstract public function url();
+    protected $table = 'crawlable_category';
 
-    /**
-     * @return string Unique category name in related source
-     */
-    abstract public function getName();
+    public function parent()
+    {
+        return $this->belongsTo(self::class, 'parent_id', 'id');
+    }
 
-    /**
-     * @return string Fully qualified parent category class in related source
-     */
-    abstract public function parent();
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'system_category_id', 'id');
+    }
 
-    /**
-     * @return bool determines if category is active for crawling
-     */
-    abstract public function isActive();
+    public function source()
+    {
+        return $this->belongsTo(Source::class, 'source_id', 'id');
+    }
 
-    /**
-     * @return string Hierarchy of the equivalent category separated by dot
-     */
-    abstract public function map();
-
-    /**
-     * @return string Fully qualified class name of the related spider
-     */
-    abstract public function spider();
+    public function spider()
+    {
+        return $this->belongsTo(Spider::class, 'spider_id', 'id');
+    }
 }
