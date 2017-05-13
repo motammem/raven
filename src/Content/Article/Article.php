@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * Class Article.
  *
  * @property MorphMany $medias
+ * @property string title
+ * @property mixed lead
  */
 class Article extends Model
 {

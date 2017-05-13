@@ -18,6 +18,21 @@ use Raven\Core\Exception\SpiderCloseException;
 
 abstract class PaginatedSpider extends Spider
 {
+    protected $startUrls = [];
+
+
+    /**
+     * @inheritDoc
+     */
+    public function getStartUrls()
+    {
+        return $this->startUrls;
+    }
+    public function addStartUrl($url)
+    {
+        $this->startUrls[] = $url;
+    }
+
     /**
      * @var int
      */
@@ -88,5 +103,5 @@ abstract class PaginatedSpider extends Spider
      *
      * @return mixed|Request[]
      */
-    abstract protected function parseSingle(DomCrawler $crawler, Response $response, Request $request);
+    abstract public function parseSingle(DomCrawler $crawler, Response $response, Request $request);
 }
