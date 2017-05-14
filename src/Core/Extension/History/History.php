@@ -15,12 +15,14 @@ use Raven\Core\Infrastructure\Model;
 
 class History extends Model
 {
-    protected $table = 'history';
     public $timestamps = false;
+
+    protected $table = 'history';
+
     protected $fillable = [
-        'hash',
-        'url',
-        'visited_at',
+      'hash',
+      'url',
+      'visited_at',
     ];
 
     /**
@@ -33,7 +35,7 @@ class History extends Model
     public static function hasNode($identity)
     {
         return self::query()
-                ->where('hash', '=', sha1($identity))
-                ->count() > 0;
+            ->where('hash', '=', sha1($identity))
+            ->count() > 0;
     }
 }

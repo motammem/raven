@@ -20,33 +20,84 @@ abstract class PaginatedSpider extends Spider
 {
     protected $startUrls = [];
 
-
-    /**
-     * @inheritDoc
-     */
-    public function getStartUrls()
-    {
-        return $this->startUrls;
-    }
-    public function addStartUrl($url)
-    {
-        $this->startUrls[] = $url;
-    }
-
     /**
      * @var int
      */
     protected $currentPage = 1;
 
     /**
-     * @return string CSS selector of single page anchor last element of selector should end with `a` tag
+     * {@inheritdoc}
      */
-    abstract protected function getSinglePageAnchor();
+    public function getStartUrls()
+    {
+        return $this->startUrls;
+    }
+
+    public function addStartUrl($url)
+    {
+        $this->startUrls[] = $url;
+    }
 
     /**
-     * @return string CSS selector of next page anchor last element of selector should end with `a` tag
+     * {@inheritdoc}
      */
-    abstract protected function getNextPageAnchor();
+    public function parse(
+      DomCrawler $crawler,
+      Response $response,
+      Request $request
+    ) {
+        // if single page anchor exists
+        $singlePages = $crawler->filter($this->getSinglePageAnchor());
+        if ($singlePages->count()) {
+            $singlePageLinks = [];
+            // extract links
+            $singlePages->each(
+              function (DomCrawler $crawler) use (&$singlePageLinks) {
+                  $singlePageLinks[] = $crawler->attr('href');
+              }
+            );
+
+            // make request for each link
+            foreach ($singlePageLinks as $link) {
+                yield new Request(
+                  $request->joinUrl($link),
+                  [$this, 'parseSingle'],
+                  $this->getIdentity($link)
+                );
+            }
+        }
+
+        // if paginate strategy is enabled
+        // and current page is equal to it's limit defined in strategy, then stop crawling!
+        if (getenv(
+            'CRAWL_STRATEGY_PAGINATE'
+          ) == 'enable' && $this->currentPage == getenv(
+            'CRAWL_STRATEGY_PAGINATE_LIMIT'
+          )
+        ) {
+            throw new SpiderCloseException(
+              sprintf('reached page limit %s', $this->currentPage)
+            );
+        }
+
+        // increase page counter
+        ++$this->currentPage;
+
+        // if next page anchor exist, request it's link
+        $nextPage = $crawler->filter($this->getNextPageAnchor());
+        if ($nextPage->count()) {
+            yield new Request(
+              $request->joinUrl($nextPage->attr('href')),
+              [$this, 'parse']
+            );
+        }
+    }
+
+    /**
+     * @return string CSS selector of single page anchor last element of
+     *                selector should end with `a` tag
+     */
+    abstract protected function getSinglePageAnchor();
 
     /**
      * Identity of the resource, if it's same as url leave it blank
@@ -61,40 +112,10 @@ abstract class PaginatedSpider extends Spider
     }
 
     /**
-     * {@inheritdoc}
+     * @return string CSS selector of next page anchor last element of selector
+     *                should end with `a` tag
      */
-    public function parse(DomCrawler $crawler, Response $response, Request $request)
-    {
-        // if single page anchor exists
-        $singlePages = $crawler->filter($this->getSinglePageAnchor());
-        if ($singlePages->count()) {
-            $singlePageLinks = [];
-            // extract links
-            $singlePages->each(function (DomCrawler $crawler) use (&$singlePageLinks) {
-                $singlePageLinks[] = $crawler->attr('href');
-            });
-
-            // make request for each link
-            foreach ($singlePageLinks as $link) {
-                yield new Request($request->joinUrl($link), [$this, 'parseSingle'], $this->getIdentity($link));
-            }
-        }
-
-        // if paginate strategy is enabled
-        // and current page is equal to it's limit defined in strategy, then stop crawling!
-        if (getenv('CRAWL_STRATEGY_PAGINATE') == 'enable' && $this->currentPage == getenv('CRAWL_STRATEGY_PAGINATE_LIMIT')) {
-            throw new SpiderCloseException(sprintf('reached page limit %s', $this->currentPage));
-        }
-
-        // increase page counter
-        ++$this->currentPage;
-
-        // if next page anchor exist, request it's link
-        $nextPage = $crawler->filter($this->getNextPageAnchor());
-        if ($nextPage->count()) {
-            yield new Request($request->joinUrl($nextPage->attr('href')), [$this, 'parse']);
-        }
-    }
+    abstract protected function getNextPageAnchor();
 
     /**
      * @param \Raven\Core\Parse\DomCrawler $crawler
@@ -103,5 +124,9 @@ abstract class PaginatedSpider extends Spider
      *
      * @return mixed|Request[]
      */
-    abstract public function parseSingle(DomCrawler $crawler, Response $response, Request $request);
+    abstract public function parseSingle(
+      DomCrawler $crawler,
+      Response $response,
+      Request $request
+    );
 }

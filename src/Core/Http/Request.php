@@ -37,13 +37,13 @@ class Request extends \GuzzleHttp\Psr7\Request
      * @param string   $version
      */
     public function __construct(
-        $uri,
-        $callback,
-        $identity = null,
-        $method = 'GET',
-        array $headers = [],
-        $body = null,
-        $version = '1.1'
+      $uri,
+      $callback,
+      $identity = null,
+      $method = 'GET',
+      array $headers = [],
+      $body = null,
+      $version = '1.1'
     ) {
         $this->callback = $callback;
         parent::__construct($method, $uri, $headers, $body, $version);

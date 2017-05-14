@@ -20,6 +20,7 @@ class ItemEvent extends Event
      * @var Request|mixed
      */
     private $item;
+
     /**
      * @var Request
      */

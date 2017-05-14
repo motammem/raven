@@ -45,7 +45,11 @@ abstract class Spider
      *
      * @return mixed|Request[]
      */
-    abstract public function parse(DomCrawler $crawler, Response $response, Request $request);
+    abstract public function parse(
+      DomCrawler $crawler,
+      Response $response,
+      Request $request
+    );
 
     /**
      * @param PipelineBuilderInterface $builder
@@ -58,18 +62,22 @@ abstract class Spider
     }
 
     /**
+     * @return array
+     */
+    public function getContext($key = null, $default = null)
+    {
+        if ($key === null) {
+            return $this->context;
+        }
+
+        return isset($this->context[$key]) ? $this->context[$key] : $default;
+    }
+
+    /**
      * @param array $context
      */
     public function setContext($context)
     {
         $this->context = $context;
-    }
-
-    /**
-     * @return array
-     */
-    public function getContext()
-    {
-        return $this->context;
     }
 }

@@ -33,7 +33,7 @@ class UserAgentEventSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            Events::ON_REQUEST => 'onRequest',
+          Events::ON_REQUEST => 'onRequest',
         ];
     }
 

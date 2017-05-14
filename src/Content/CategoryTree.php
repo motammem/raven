@@ -14,8 +14,8 @@ namespace Raven\Content;
 class CategoryTree
 {
     private $categories = [
-        'technology' => [
-            'phone',
-        ],
+      'technology' => [
+        'phone',
+      ],
     ];
 }

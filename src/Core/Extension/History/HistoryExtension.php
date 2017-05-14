@@ -25,6 +25,8 @@ class HistoryExtension implements ExtensionInterface
 
     public static function build(EventDispatcherInterface $dispatcher)
     {
-        $dispatcher->addSubscriber(new HistoryEventSubscriber(new IdentityGuesser()));
+        $dispatcher->addSubscriber(
+          new HistoryEventSubscriber(new IdentityGuesser())
+        );
     }
 }

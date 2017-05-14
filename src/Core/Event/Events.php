@@ -14,8 +14,12 @@ namespace Raven\Core\Event;
 class Events
 {
     const SPIDER_CLOSED = 'spider.closed';
+
     const SPIDER_OPENED = 'spider.opened';
+
     const ITEM_SCRAPED = 'item.scraped';
+
     const ON_REQUEST = 'on.request';
+
     const ON_RESPONSE = 'on.response';
 }

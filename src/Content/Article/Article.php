@@ -27,8 +27,8 @@ use Raven\Core\Infrastructure\Identity;
  * @property string $lead Text brief of article
  * @property string $pre_title Comes before title
  * @property string $post_title Comes after title
- * @property string $body Text section of the html
- * @property string $html Html section of the content this part includes images and videos
+ * @property string $text Text section of the html
+ * @property string $html Html section of the content this part may include images and videos
  * @property string $document Whole page article belongs to
  * @property string $target_site_id Identity of the article in target website
  * @property string $url Url of the article source
@@ -36,15 +36,16 @@ use Raven\Core\Infrastructure\Identity;
  * @property Collection|Tag[] $tags Tags of the article
  * @property CrawlableCategory $category Category article belongs to
  * @property Carbon $created_at When article created in our site
- * @property Carbon $publish_date When article published in target site
+ * @property Carbon $published_at When article published in target site
+ * @property string $published_at_label Text representation of the published_at
  */
 class Article extends Model
 {
     use Identity;
 
-    protected $table = 'article';
-
     public $timestamps = false;
+
+    protected $table = 'article';
 
     /**
      * Main media of the article.

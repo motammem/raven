@@ -67,7 +67,10 @@ class Crawler
             $pipeline = $builder->build();
 
             // dispatch spider.open event
-            $this->dispatcher->dispatch(Events::SPIDER_OPENED, new SpiderEvent($spider));
+            $this->dispatcher->dispatch(
+              Events::SPIDER_OPENED,
+              new SpiderEvent($spider)
+            );
 
             // use spider
             foreach ($spider->startRequests() as $request) {
@@ -81,10 +84,16 @@ class Crawler
             _log(Logger::INFO, 'Spider finished successfully');
         } catch (SpiderCloseException $e) {
             // close spider and ignore it
-            _log(Logger::INFO, 'Spider closed cause '.strtolower($e->getCause()));
+            _log(
+              Logger::INFO,
+              'Spider closed cause '.strtolower($e->getCause())
+            );
         }
         // dispatch spider.close event
-        $this->dispatcher->dispatch(Events::SPIDER_CLOSED, new SpiderEvent($spider));
+        $this->dispatcher->dispatch(
+          Events::SPIDER_CLOSED,
+          new SpiderEvent($spider)
+        );
     }
 
     /**
@@ -103,20 +112,48 @@ class Crawler
             while (count($requestsToPerform) > 0) {
                 $request = array_shift($requestsToPerform);
                 try {
-                    $this->dispatcher->dispatch(Events::ON_REQUEST, new RequestEvent($request));
+                    $this->dispatcher->dispatch(
+                      Events::ON_REQUEST,
+                      new RequestEvent($request)
+                    );
                 } catch (IgnoreRequestException $e) {
-                    _log(Logger::INFO, 'ignoring request', [(string) $request->getUri()]);
+                    _log(
+                      Logger::INFO,
+                      'ignoring request',
+                      [(string) $request->getUri()]
+                    );
                     continue;
                 }
-                _log(Logger::INFO, 'Requesting', ['url' => (string) $request->getUri(), 'agent' => $request->getHeaders()]);
+                _log(
+                  Logger::INFO,
+                  'Requesting',
+                  [
+                    'url' => (string) $request->getUri(),
+                    'agent' => $request->getHeaders(),
+                  ]
+                );
                 // perform request
-                $response = $this->client->request($request->getMethod(), $request->getUri());
-                $this->dispatcher->dispatch(Events::ON_RESPONSE, new ResponseEvent($response));
+                $response = $this->client->request(
+                  $request->getMethod(),
+                  $request->getUri()
+                );
+                $this->dispatcher->dispatch(
+                  Events::ON_RESPONSE,
+                  new ResponseEvent($response)
+                );
                 // process callback results
                 $crawler = new DomCrawler($response->getBody()->getContents());
-                $results = call_user_func($request->getCallback(), $crawler, $response, $request);
+                $results = call_user_func(
+                  $request->getCallback(),
+                  $crawler,
+                  $response,
+                  $request
+                );
                 foreach ($results as $result) {
-                    $this->dispatcher->dispatch(Events::ITEM_SCRAPED, new ItemEvent($result, $request));
+                    $this->dispatcher->dispatch(
+                      Events::ITEM_SCRAPED,
+                      new ItemEvent($result, $request)
+                    );
                     if ($result instanceof Request) {
                         $requestsToPerform[] = $result;
                     } else {

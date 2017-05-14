@@ -31,7 +31,10 @@ class CrawlRunner
         foreach ($scheduler->getSpiders() as $spider) {
             _logger()->pushProcessor(
               function ($log) use ($spider) {
-                  $log['extra'] = array_merge($spider->getContext(), $log['extra']);
+                  $log['extra'] = array_merge(
+                    $spider->getContext(),
+                    $log['extra']
+                  );
 
                   return $log;
               }

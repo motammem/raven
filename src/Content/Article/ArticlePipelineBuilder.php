@@ -11,13 +11,19 @@
 
 namespace Raven\Content\Article;
 
-use Raven\Core\Spider\Spider;
 use League\Pipeline\PipelineBuilderInterface;
+use Raven\Pipeline\TelegramPublisherPipeline;
+use Raven\Pipeline\EloquentPersistencePipeline;
+use Raven\Content\Media\Pipeline\MediaDownloaderPipeline;
 
-abstract class ArticleSpider extends Spider
+trait ArticlePipelineBuilder
 {
     public function buildPipeline(PipelineBuilderInterface $builder)
     {
-        // TODO: Implement buildPipeline() method.
+        $builder
+          ->add(new ArticleTrimPipeline())
+          ->add(new MediaDownloaderPipeline())
+          ->add(new EloquentPersistencePipeline())
+          ->add(new TelegramPublisherPipeline());
     }
 }

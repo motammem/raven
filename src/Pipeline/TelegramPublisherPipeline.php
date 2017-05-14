@@ -19,7 +19,9 @@ class TelegramPublisherPipeline implements StageInterface
 {
     public function __construct()
     {
-        new Telegram(getenv('TELEGRAM_API_KEY'), getenv('TELEGRAM_BOT_USERNAME'));
+        new Telegram(
+          getenv('TELEGRAM_API_KEY'), getenv('TELEGRAM_BOT_USERNAME')
+        );
     }
 
     /**
@@ -30,14 +32,17 @@ class TelegramPublisherPipeline implements StageInterface
     public function __invoke($payload)
     {
         if ($payload->mainMedia()) {
-            $id = Request::sendPhoto([
+            $id = Request::sendPhoto(
+              [
                 'chat_id' => '@khabar_3anieh',
                 'caption' => $payload->title."\n".$payload->url,
-            ], $payload->mainMedia()->path)->getResult()->message_id;
+              ],
+              $payload->mainMedia()->path
+            )->getResult()->message_id;
         }
         $data = [
-            'chat_id' => '@khabar_3anieh',
-            'text' => $payload->lead,
+          'chat_id' => '@khabar_3anieh',
+          'text' => $payload->lead,
         ];
         if (isset($id)) {
             $data['reply_to_message_id'] = $id;

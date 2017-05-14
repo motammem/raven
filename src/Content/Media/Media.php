@@ -15,7 +15,7 @@ use Carbon\Carbon;
 use Raven\Core\Infrastructure\Model;
 
 /**
- * Class Media
+ * Class Media.
  *
  * @property string $id Identity of the media in system
  * @property string $title Title of the media
@@ -25,16 +25,17 @@ use Raven\Core\Infrastructure\Model;
  * @property bool $is_main Determines if this media is main in related article medias
  * @property Carbon $created_at Datetime when media created on our site
  * @property Carbon $published_at Datetime when media published in target site
-
- * @package Raven\Content\Media
  */
 class Media extends Model
 {
-    protected $table = 'media';
-    public $timestamps = false;
     protected static $unguarded = true;
+
+    public $timestamps = false;
+
+    protected $table = 'media';
+
     protected $attributes = [
-        'is_main' => false,
+      'is_main' => false,
     ];
 
     protected $casts = [
@@ -43,6 +44,9 @@ class Media extends Model
       'is_main' => 'boolean',
     ];
 
+    /**
+     * Content relationship.
+     */
     public function content()
     {
         return $this->morphTo(null, null, 'id');

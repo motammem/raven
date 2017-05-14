@@ -11,21 +11,70 @@
 
 namespace Raven\Source\Zoomit\Spider;
 
-use Carbon\Carbon;
 use Raven\Core\Http\Request;
 use Raven\Core\Http\Response;
 use Raven\Content\Media\Media;
 use Raven\Core\Parse\DomCrawler;
 use Raven\Content\Article\Article;
 use Raven\Core\Spider\PaginatedSpider;
-use Raven\Content\Article\ArticlePipeline;
-use League\Pipeline\PipelineBuilderInterface;
-use Raven\Pipeline\TelegramPublisherPipeline;
-use Raven\Pipeline\EloquentPersistencePipeline;
-use Raven\Content\Media\Pipeline\MediaDownloaderPipeline;
+use Symfony\Component\DomCrawler\Crawler;
+use Raven\Content\Article\ArticlePipelineBuilder;
 
 class CommonSpider extends PaginatedSpider
 {
+    use ArticlePipelineBuilder;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function parseSingle(
+      DomCrawler $crawler,
+      Response $response,
+      Request $request
+    ) {
+        $article = new Article($this->getIdentity((string) $request->getUri()));
+        $article->title = $crawler->filter('h1 a')->text();
+        $article->lead = $crawler->filter('.article-summery p')->text();
+        $article->pre_title = null;
+        $article->post_title = null;
+        $section = $crawler->filter('.article-section');
+        $article->text = $section->text();
+        $article->html = $section->html();
+        $article->document = $crawler->html();
+        // $article->target_site_id = null; this filled with identity
+        $article->url = (string) $request->getUri();
+        $article->category_id = $this->getContext('category_id');
+        $article->published_at_label = $crawler->filter('.author-details-row2')
+          ->text();
+        $tags = [];
+        $crawler->filter('.article-tag-row a')->each(
+          function (Crawler $crawler) use (&$tags) {
+              $tags[] = $crawler->text();
+          }
+        );
+        $article->tags = $tags;
+        $mainMedia = new Media(
+          [
+            'original_url' => $crawler->filter('img.cover')->attr('src'),
+            'is_main' => 1,
+          ]
+        );
+        $article->medias[] = $mainMedia;
+        yield $article;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getIdentity($link)
+    {
+        return preg_match(
+          '/(?<=\/)\d{5,6}(?=\/)/',
+          $link,
+          $matches
+        ) ? $matches[0] : $link;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -40,52 +89,5 @@ class CommonSpider extends PaginatedSpider
     protected function getNextPageAnchor()
     {
         return 'ul.pagination li:last-child a';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getIdentity($link)
-    {
-        return preg_match('/(?<=\/)\d{5,6}(?=\/)/', $link, $matches) ? $matches[0] : $link;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function parseSingle(DomCrawler $crawler, Response $response, Request $request)
-    {
-        $article = new Article($this->getIdentity((string) $request->getUri()));
-        $article->title = $crawler->filter('h1 a')->text();
-        $article->lead = $crawler->filter('.article-summery p')->text();
-        $article->pre_title = null;
-        $article->post_title = null;
-        $section = $crawler->filter('.article-section');
-        $article->body = $section->text();
-        $article->html = $section->html();
-        $article->document = $crawler->html();
-        // $article->target_site_id = null; this filled with identity
-        $article->url = $request->getUri();
-        $article->category = null;
-        $article->created_at = Carbon::now();
-        $article->publish_date = null;
-        $mainMedia = new Media([
-          'original_url' => $crawler->filter('img.cover')->attr('src'),
-          'is_main' => 1,
-        ]);
-        $article->medias[] = $mainMedia;
-        yield $article;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function buildPipeline(PipelineBuilderInterface $builder)
-    {
-        $builder
-          ->add(new ArticlePipeline())
-          ->add(new MediaDownloaderPipeline())
-          ->add(new EloquentPersistencePipeline())
-          ->add(new TelegramPublisherPipeline());
     }
 }

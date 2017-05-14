@@ -32,20 +32,20 @@ class HistoryEventSubscriber implements EventSubscriberInterface
     /**
      * {@inheritdoc}
      */
-    public static function getSubscribedEvents()
+    public function __construct(IdentityGuesserInterface $identityGuesser)
     {
-        return [
-            Events::ITEM_SCRAPED => 'itemScraped',
-            Events::ON_REQUEST => 'onRequest',
-        ];
+        $this->identityGuesser = $identityGuesser;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function __construct(IdentityGuesserInterface $identityGuesser)
+    public static function getSubscribedEvents()
     {
-        $this->identityGuesser = $identityGuesser;
+        return [
+          Events::ITEM_SCRAPED => 'itemScraped',
+          Events::ON_REQUEST => 'onRequest',
+        ];
     }
 
     /**
@@ -55,11 +55,13 @@ class HistoryEventSubscriber implements EventSubscriberInterface
     {
         if ( ! ($event->getItem() instanceof Request)) {
             $identity = $this->identityGuesser->guess($event->getRequest());
-            $history = new History([
+            $history = new History(
+              [
                 'hash' => sha1($identity),
                 'url' => $event->getRequest()->getUri(),
                 'visited_at' => Carbon::now(),
-            ]);
+              ]
+            );
             try {
                 $history->save();
             } catch (\Exception $e) {

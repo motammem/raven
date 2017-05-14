@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 class Model extends \Illuminate\Database\Eloquent\Model
 {
     protected static $unguarded = true;
+
     public $timestamps = false;
 
     public function push()
@@ -29,7 +30,8 @@ class Model extends \Illuminate\Database\Eloquent\Model
         // the relationships and save each model via this "push" method, which allows
         // us to recurse into all of these nested relations for the model instance.
         foreach ($this->relations as $relation => $models) {
-            $models = $models instanceof Collection ? $models->all() : [$models];
+            $models = $models instanceof Collection ? $models->all(
+            ) : [$models];
 
             if ($this->$relation() instanceof MorphMany) {
                 $this->$relation()->saveMany($models);
