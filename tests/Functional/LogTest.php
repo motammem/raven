@@ -11,13 +11,11 @@
 
 namespace Tests\Raven\Functional;
 
-use Raven\Core\Http\Request;
 use PHPUnit\Framework\TestCase;
-use Raven\Core\Extension\History\History;
-use Raven\Core\Extension\History\IdentityGuesser\IdentityGuesser;
 
 class LogTest extends TestCase
 {
+
     public function testLog()
     {
 

@@ -11,22 +11,36 @@
 
 namespace Raven\Content\Media;
 
+use Carbon\Carbon;
 use Raven\Core\Infrastructure\Model;
 
+/**
+ * Class Media
+ *
+ * @property string $id Identity of the media in system
+ * @property string $title Title of the media
+ * @property string $filename File name of the media
+ * @property string $path Absolute path of the media on host
+ * @property string $original_url Url of the media in target website
+ * @property bool $is_main Determines if this media is main in related article medias
+ * @property Carbon $created_at Datetime when media created on our site
+ * @property Carbon $published_at Datetime when media published in target site
+
+ * @package Raven\Content\Media
+ */
 class Media extends Model
 {
     protected $table = 'media';
+    public $timestamps = false;
+    protected static $unguarded = true;
     protected $attributes = [
-        'is_main' => 0,
+        'is_main' => false,
     ];
-    protected $fillable = [
-        'id',
-        'title',
-        'filename',
-        'path',
-        'original_url',
-        'content_id',
-        'is_main',
+
+    protected $casts = [
+      'published_at' => 'datetime',
+      'created_at' => 'datetime',
+      'is_main' => 'boolean',
     ];
 
     public function content()
