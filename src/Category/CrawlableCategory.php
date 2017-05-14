@@ -20,6 +20,9 @@ class CrawlableCategory extends Model
 {
     protected $table = 'crawlable_category';
 
+    protected $casts = [
+      'last_run' => 'datetime'
+    ];
     /**
      * Self relationship.
      */

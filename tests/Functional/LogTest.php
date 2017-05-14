@@ -12,10 +12,12 @@
 namespace Tests\Raven\Functional;
 
 use PHPUnit\Framework\TestCase;
+use Raven\Core\Schedule\CategorySequentialScheduler;
 
 class LogTest extends TestCase
 {
     public function testLog()
     {
+        $scheulder = new CategorySequentialScheduler();
     }
 }

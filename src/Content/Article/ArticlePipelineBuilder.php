@@ -12,18 +12,19 @@
 namespace Raven\Content\Article;
 
 use League\Pipeline\PipelineBuilderInterface;
-use Raven\Pipeline\TelegramPublisherPipeline;
-use Raven\Pipeline\EloquentPersistencePipeline;
 use Raven\Content\Media\Pipeline\MediaDownloaderPipeline;
+use Raven\Pipeline\TelegramPublisherPipeline;
 
 trait ArticlePipelineBuilder
 {
+
     public function buildPipeline(PipelineBuilderInterface $builder)
     {
         $builder
           ->add(new ArticleTrimPipeline())
           ->add(new MediaDownloaderPipeline())
-          ->add(new EloquentPersistencePipeline())
-          ->add(new TelegramPublisherPipeline());
+          ->add(new ArticlePersistencePipeline())
+          ->add(new TelegramPublisherPipeline())
+        ;
     }
 }

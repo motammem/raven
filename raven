@@ -15,5 +15,6 @@ $application = new \Symfony\Component\Console\Application();
 $application->setCatchExceptions(false);
 
 $application->add(new \Raven\Core\Command\RavenCommand());
+$application->add(new \Raven\Core\Command\TruncateCommand());
 $application->run();
 

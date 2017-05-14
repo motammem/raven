@@ -11,12 +11,13 @@
 
 namespace Raven\Pipeline;
 
+use League\Pipeline\StageInterface;
 use Longman\TelegramBot\Request;
 use Longman\TelegramBot\Telegram;
-use League\Pipeline\StageInterface;
 
 class TelegramPublisherPipeline implements StageInterface
 {
+
     public function __construct()
     {
         new Telegram(
@@ -25,24 +26,24 @@ class TelegramPublisherPipeline implements StageInterface
     }
 
     /**
-     * @param \Raven\Content\Article\Article $payload
+     * @param \Raven\Content\Article\Article $article
      *
      * @return mixed|void
      */
-    public function __invoke($payload)
+    public function __invoke($article)
     {
-        if ($payload->mainMedia()) {
+        if ($article->mainMedia()) {
             $id = Request::sendPhoto(
               [
                 'chat_id' => '@khabar_3anieh',
-                'caption' => $payload->title."\n".$payload->url,
+                'caption' => $article->title."\n".$article->url,
               ],
-              $payload->mainMedia()->path
+              $article->mainMedia()->path
             )->getResult()->message_id;
         }
         $data = [
           'chat_id' => '@khabar_3anieh',
-          'text' => $payload->lead,
+          'text' => $article->lead . "\n". implode(', ' ,array_column($article->tags->toArray(),'name')),
         ];
         if (isset($id)) {
             $data['reply_to_message_id'] = $id;

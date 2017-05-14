@@ -13,7 +13,7 @@ namespace Raven\Core\Infrastructure;
 
 trait Identity
 {
-    public function __construct($identity, $attributes = [])
+    public function __construct($identity = null, $attributes = [])
     {
         $attributes['target_site_id'] = $identity;
         parent::__construct($attributes);

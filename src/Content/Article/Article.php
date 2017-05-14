@@ -45,6 +45,21 @@ class Article extends Model
 
     public $timestamps = false;
 
+    protected $fillable = [
+        'title',
+        'lead',
+        'pre_title',
+        'post_title',
+        'text',
+        'html',
+        'document',
+        'target_site_id',
+        'url',
+        'created_at',
+        'published_at',
+        'published_at_label',
+    ];
+
     protected $table = 'article';
 
     /**

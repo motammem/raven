@@ -11,17 +11,19 @@
 
 namespace Raven\Source\Zoomit\Spider;
 
+use Raven\Category\Tag;
+use Raven\Content\Article\Article;
+use Raven\Content\Article\ArticlePipelineBuilder;
+use Raven\Content\Media\Media;
 use Raven\Core\Http\Request;
 use Raven\Core\Http\Response;
-use Raven\Content\Media\Media;
 use Raven\Core\Parse\DomCrawler;
-use Raven\Content\Article\Article;
 use Raven\Core\Spider\PaginatedSpider;
 use Symfony\Component\DomCrawler\Crawler;
-use Raven\Content\Article\ArticlePipelineBuilder;
 
 class CommonSpider extends PaginatedSpider
 {
+
     use ArticlePipelineBuilder;
 
     /**
@@ -32,7 +34,7 @@ class CommonSpider extends PaginatedSpider
       Response $response,
       Request $request
     ) {
-        $article = new Article($this->getIdentity((string) $request->getUri()));
+        $article = new Article($this->getIdentity((string)$request->getUri()));
         $article->title = $crawler->filter('h1 a')->text();
         $article->lead = $crawler->filter('.article-summery p')->text();
         $article->pre_title = null;
@@ -42,24 +44,21 @@ class CommonSpider extends PaginatedSpider
         $article->html = $section->html();
         $article->document = $crawler->html();
         // $article->target_site_id = null; this filled with identity
-        $article->url = (string) $request->getUri();
+        $article->url = (string)$request->getUri();
         $article->category_id = $this->getContext('category_id');
-        $article->published_at_label = $crawler->filter('.author-details-row2')
-          ->text();
-        $tags = [];
+        $article->published_at_label = $crawler->filter('.author-details-row2')->text();
+
         $crawler->filter('.article-tag-row a')->each(
-          function (Crawler $crawler) use (&$tags) {
-              $tags[] = $crawler->text();
+          function (Crawler $crawler) use ($article) {
+              $article->tags->push(new Tag(['name' => $crawler->text()]));
           }
         );
-        $article->tags = $tags;
-        $mainMedia = new Media(
-          [
+
+        $mainMedia = new Media([
             'original_url' => $crawler->filter('img.cover')->attr('src'),
             'is_main' => 1,
-          ]
-        );
-        $article->medias[] = $mainMedia;
+        ]);
+        $article->medias->push($mainMedia);
         yield $article;
     }
 

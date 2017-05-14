@@ -26,8 +26,8 @@ class CategorySequentialScheduler implements SchedulerInterface
     public function __construct()
     {
         $this->categories = CrawlableCategory::query()
-          ->orderBy('last_run', 'desc')
           ->where('is_active', '=', '1')
+          ->orderBy('last_run')
           ->limit(2)
           ->get();
     }
@@ -41,6 +41,7 @@ class CategorySequentialScheduler implements SchedulerInterface
         foreach ($this->categories as $crawlableCategory) {
             $crawlableCategory->last_run = new \DateTime();
             $crawlableCategory->save();
+            dd($this->categories->toArray());
             $spiderClass = $crawlableCategory->spider->class;
             /** @var \Raven\Core\Spider\PaginatedSpider $spider */
             $spider = new $spiderClass();
@@ -49,7 +50,7 @@ class CategorySequentialScheduler implements SchedulerInterface
                 'source' => $crawlableCategory->source->name,
                 'category' => $crawlableCategory->name,
                 'spider' => $crawlableCategory->spider->name,
-                'category_id' => $crawlableCategory->spider->name,
+                'category_id' => $crawlableCategory->id,
               ]
             );
             $spider->addStartUrl($crawlableCategory->url);

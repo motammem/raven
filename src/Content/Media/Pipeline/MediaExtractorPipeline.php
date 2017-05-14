@@ -28,12 +28,9 @@ class MediaExtractorPipeline implements StageInterface
         $crawler = new DomCrawler($article->body);
         $imageSources = $crawler->filter('img')->attr('src');
         $article->medias->add(
-          new Media(
-            [
-              'original_url' => $imageSources,
-            ]
-          )
-        );
+          new Media([
+            'original_url' => $imageSources,
+        ]));
 
         return $article;
     }

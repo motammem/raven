@@ -19,7 +19,7 @@ class EloquentPersistencePipeline implements StageInterface
     public function __invoke($payload)
     {
         if ($payload instanceof Model) {
-            $payload->save();
+            $payload->push();
         }
 
         return $payload;
