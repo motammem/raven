@@ -20,21 +20,33 @@ class CrawlableCategory extends Model
 {
     protected $table = 'crawlable_category';
 
+    /**
+     * Self relationship.
+     */
     public function parent()
     {
         return $this->belongsTo(self::class, 'parent_id', 'id');
     }
 
+    /**
+     * Category relationship.
+     */
     public function category()
     {
         return $this->belongsTo(Category::class, 'system_category_id', 'id');
     }
 
+    /**
+     * Source relationship.
+     */
     public function source()
     {
         return $this->belongsTo(Source::class, 'source_id', 'id');
     }
 
+    /**
+     * Spider relationship.
+     */
     public function spider()
     {
         return $this->belongsTo(Spider::class, 'spider_id', 'id');

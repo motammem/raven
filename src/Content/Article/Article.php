@@ -12,11 +12,12 @@
 namespace Raven\Content\Article;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Raven\Category\CrawlableCategory;
+use Raven\Category\Tag;
 use Raven\Content\Media\Media;
-use Raven\Core\Infrastructure\Identity;
+use Illuminate\Support\Collection;
 use Raven\Core\Infrastructure\Model;
+use Raven\Category\CrawlableCategory;
+use Raven\Core\Infrastructure\Identity;
 
 /**
  * Class Article.
@@ -31,25 +32,25 @@ use Raven\Core\Infrastructure\Model;
  * @property string $document Whole page article belongs to
  * @property string $target_site_id Identity of the article in target website
  * @property string $url Url of the article source
- * @property Media[] $medias Medias attached to article
+ * @property Collection|Media[] $medias Medias attached to article
+ * @property Collection|Tag[] $tags Tags of the article
  * @property CrawlableCategory $category Category article belongs to
  * @property Carbon $created_at When article created in our site
  * @property Carbon $publish_date When article published in target site
  */
 class Article extends Model
 {
-
     use Identity;
 
     protected $table = 'article';
 
     public $timestamps = false;
 
-    public function medias()
-    {
-        return $this->morphMany(Media::class, 'content');
-    }
-
+    /**
+     * Main media of the article.
+     *
+     * @return Media
+     */
     public function mainMedia()
     {
         foreach ($this->medias as $media) {
@@ -61,8 +62,27 @@ class Article extends Model
         return new Media();
     }
 
+    /**
+     * Relationship with category.
+     */
     public function category()
     {
         return $this->belongsTo(CrawlableCategory::class, 'category_id', 'id');
+    }
+
+    /**
+     * Relationship with tag.
+     */
+    public function tags()
+    {
+        return $this->morphToMany(Tag::class, 'taggable');
+    }
+
+    /**
+     * Relationship with media.
+     */
+    public function medias()
+    {
+        return $this->morphMany(Media::class, 'content');
     }
 }

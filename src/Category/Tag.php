@@ -11,25 +11,25 @@
 
 namespace Raven\Category;
 
+use Raven\Content\Article\Article;
 use Raven\Core\Infrastructure\Model;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * Class Source.
+ * Class Tag.
  *
- * @property string $name Name of the source
- * @property string $domain Domain of the source
- * @property Collection|Spider[] $spider Spiders of source
+ * @property string $name Name of the tag
+ * @property Article[]|Collection $articles Articles related with tag
  */
-class Source extends Model
+class Tag extends Model
 {
-    protected $table = 'source';
+    protected $table = 'tag';
 
     /**
-     * Spider relationship.
+     * Article relationship.
      */
-    public function spiders()
+    public function articles()
     {
-        return $this->hasMany(Spider::class, 'source_id', 'id');
+        return $this->morphedByMany(Article::class, 'taggable');
     }
 }
